@@ -28,7 +28,9 @@ button.danger { background: #dc2626; margin-left: 0.5rem; }
 .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); padding: 1.3rem; }
 .card span { color: #64748b; display: block; margin-bottom: 0.8rem; }
 .card strong { color: #0f172a; font-size: 2rem; }
-.form-grid { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 1.5rem; padding: 1.5rem; }
+.search-card, .form-grid { background: #fff; border: 1px solid #e2e8f0; border-radius: 18px; box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); margin-bottom: 1.5rem; padding: 1.5rem; }
+.search-card { display: grid; }
+.form-grid { display: grid; gap: 1rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 label { color: #334155; display: grid; font-weight: 700; gap: 0.35rem; }
 input, textarea, select { border: 1px solid #cbd5e1; border-radius: 10px; color: #0f172a; padding: 0.7rem; width: 100%; }
 textarea { min-height: 90px; resize: vertical; }
@@ -41,6 +43,7 @@ textarea { min-height: 90px; resize: vertical; }
 table { border-collapse: collapse; min-width: 760px; width: 100%; }
 th, td { border-bottom: 1px solid #e2e8f0; padding: 1rem; text-align: left; vertical-align: top; }
 th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: uppercase; }
+.empty-state { color: #64748b; font-weight: 700; text-align: center; }
 .badge { background: #e0f2fe; border-radius: 999px; color: #0369a1; display: inline-block; font-weight: 800; padding: 0.35rem 0.7rem; }
 
 @media (max-width: 900px) {

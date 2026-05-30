@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client.js';
 
 const emptyForm = { name: '', cpf: '', phone_whatsapp: '', email: '', birth_date: '', notes: '' };
+
+function normalizeSearchValue(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
 
 export default function Patients() {
   const [patients, setPatients] = useState([]);
@@ -9,6 +16,7 @@ export default function Patients() {
   const [editingId, setEditingId] = useState(null);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   async function loadPatients() {
     setPatients(await api.get('/patients'));
@@ -21,6 +29,28 @@ export default function Patients() {
   function updateField(event) {
     setForm({ ...form, [event.target.name]: event.target.value });
   }
+
+  const filteredPatients = useMemo(() => {
+    const normalizedSearch = normalizeSearchValue(searchTerm.trim());
+    const searchDigits = normalizedSearch.replace(/\D/g, '');
+
+    if (!normalizedSearch) {
+      return patients;
+    }
+
+    return patients.filter((patient) => {
+      const searchableFields = [patient.name, patient.cpf, patient.phone_whatsapp];
+
+      return searchableFields.some((field) => {
+        const normalizedField = normalizeSearchValue(field);
+        const fieldDigits = normalizedField.replace(/\D/g, '');
+
+        return (
+          normalizedField.includes(normalizedSearch) || (searchDigits && fieldDigits.includes(searchDigits))
+        );
+      });
+    });
+  }, [patients, searchTerm]);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -69,6 +99,18 @@ export default function Patients() {
       </div>
       {message && <p className="alert success">{message}</p>}
       {error && <p className="alert error">{error}</p>}
+      <div className="search-card">
+        <label>
+          Buscar paciente
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Digite nome, CPF ou Telefone/WhatsApp"
+            aria-label="Buscar paciente por nome, CPF ou Telefone/WhatsApp"
+          />
+        </label>
+      </div>
       <form className="form-grid" onSubmit={handleSubmit}>
         <label>Nome*<input name="name" value={form.name} onChange={updateField} required /></label>
         <label>CPF*<input name="cpf" value={form.cpf} onChange={updateField} required /></label>
@@ -83,7 +125,15 @@ export default function Patients() {
       </form>
       <div className="table-wrapper">
         <table><thead><tr><th>Nome</th><th>CPF</th><th>Telefone/WhatsApp</th><th>E-mail</th><th>Ações</th></tr></thead>
-          <tbody>{patients.map((patient) => <tr key={patient.id}><td>{patient.name}</td><td>{patient.cpf}</td><td>{patient.phone_whatsapp}</td><td>{patient.email}</td><td><button type="button" onClick={() => startEdit(patient)}>Editar</button><button type="button" className="danger" onClick={() => removePatient(patient.id)}>Excluir</button></td></tr>)}</tbody>
+          <tbody>
+            {filteredPatients.length > 0 ? (
+              filteredPatients.map((patient) => <tr key={patient.id}><td>{patient.name}</td><td>{patient.cpf}</td><td>{patient.phone_whatsapp}</td><td>{patient.email}</td><td><button type="button" onClick={() => startEdit(patient)}>Editar</button><button type="button" className="danger" onClick={() => removePatient(patient.id)}>Excluir</button></td></tr>)
+            ) : (
+              <tr>
+                <td className="empty-state" colSpan="5">Nenhum paciente encontrado</td>
+              </tr>
+            )}
+          </tbody>
         </table>
       </div>
     </section>
