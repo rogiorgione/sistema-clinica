@@ -1,24 +1,2 @@
-const items = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'patients', label: 'Pacientes' },
-  { id: 'budgets', label: 'Orçamentos' },
-  { id: 'financial', label: 'Financeiro' },
-  { id: 'appointments', label: 'Agenda' },
-];
-
-export default function Navigation({ activePage, onChangePage }) {
-  return (
-    <nav className="navigation" aria-label="Navegação principal">
-      {items.map((item) => (
-        <button
-          key={item.id}
-          className={activePage === item.id ? 'active' : ''}
-          type="button"
-          onClick={() => onChangePage(item.id)}
-        >
-          {item.label}
-        </button>
-      ))}
-    </nav>
-  );
-}
+import { groups, allowed } from '../modules.js';
+export default function Navigation({ activePage, onChangePage, user }) { return <nav className="navigation" aria-label="Navegação principal">{groups.map(group => { const items = group.items.filter(([id]) => allowed(id,user)); return items.length ? <section className="nav-group" key={group.label}><h2>{group.label}</h2>{items.map(([id,label]) => <button key={id} className={activePage===id?'active':''} type="button" onClick={()=>onChangePage(id)}>{label}</button>)}</section> : null; })}</nav>; }

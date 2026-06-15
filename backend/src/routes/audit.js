@@ -1,0 +1,2 @@
+const express = require('express'); const { all } = require('../database/connection'); const router = express.Router();
+router.get('/', async (req, res, next) => { try { res.json(await all('SELECT audit_logs.*, users.name AS user_name FROM audit_logs LEFT JOIN users ON users.id = audit_logs.user_id ORDER BY audit_logs.created_at DESC LIMIT 500')); } catch (e) { next(e); } }); module.exports = router;
