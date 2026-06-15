@@ -52,3 +52,15 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
   .form-grid { grid-template-columns: 1fr; }
   .content { padding: 1rem; }
 }
+.nav-group { display: grid; gap: .3rem; }
+.nav-group h2 { color: #64748b; font-size: .72rem; letter-spacing: .12em; margin: 1rem 0 .2rem; text-transform: uppercase; }
+.navigation { overflow-y: auto; }
+.navigation button { padding: .55rem .75rem; }
+.user-box { border-top: 1px solid #334155; display: grid; gap: .5rem; margin-top: auto; padding-top: 1rem; }
+.user-box small { color: #94a3b8; text-transform: capitalize; }
+.login-page { align-items: center; background: linear-gradient(135deg,#0f172a,#164e63); display: flex; justify-content: center; min-height: 100vh; padding: 1rem; }
+.login-card { background: white; border-radius: 22px; display: grid; gap: 1rem; max-width: 420px; padding: 2.5rem; width: 100%; }
+.login-card h1,.login-card p { margin: 0; }
+.inline-form { align-items: end; grid-template-columns: 1fr auto; }
+.record-title { display: block; font-size: 1.15rem!important; margin-bottom: .7rem; }
+.card small { color: #64748b; }

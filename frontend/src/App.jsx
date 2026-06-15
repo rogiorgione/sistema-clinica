@@ -1,25 +1,3 @@
-import { useState } from 'react';
-import Layout from './components/Layout.jsx';
-import Dashboard from './pages/Dashboard.jsx';
-import Patients from './pages/Patients.jsx';
-import Budgets from './pages/Budgets.jsx';
-import Financial from './pages/Financial.jsx';
-import Appointments from './pages/Appointments.jsx';
-
-const pages = {
-  dashboard: <Dashboard />,
-  patients: <Patients />,
-  budgets: <Budgets />,
-  financial: <Financial />,
-  appointments: <Appointments />,
-};
-
-export default function App() {
-  const [activePage, setActivePage] = useState('dashboard');
-
-  return (
-    <Layout activePage={activePage} onChangePage={setActivePage}>
-      {pages[activePage]}
-    </Layout>
-  );
-}
+import { useState } from 'react'; import Layout from './components/Layout.jsx'; import Dashboard from './pages/Dashboard.jsx'; import Patients from './pages/Patients.jsx'; import Budgets from './pages/Budgets.jsx'; import Financial from './pages/Financial.jsx'; import Appointments from './pages/Appointments.jsx'; import Login from './pages/Login.jsx'; import ModulePage from './pages/ModulePage.jsx'; import { groups } from './modules.js';
+const labels=Object.fromEntries(groups.flatMap(g=>g.items)); const paths={...Object.fromEntries(Object.keys(labels).map(k=>[k,k])), users:'users', audit:'audit'};
+export default function App(){const [user,setUser]=useState(()=>{try{return JSON.parse(localStorage.getItem('belleart_user'))}catch{return null}});const [activePage,setActivePage]=useState('dashboard');if(!user)return <Login onLogin={setUser}/>;let page={dashboard:<Dashboard/>,patients:<Patients/>,budgets:<Budgets/>,financial:<Financial/>,appointments:<Appointments/>}[activePage];if(!page)page=<ModulePage title={labels[activePage]} path={paths[activePage]} readOnly={user.role==='leitura'||['audit','users'].includes(activePage)}/>;return <Layout activePage={activePage} onChangePage={setActivePage} user={user} onLogout={()=>{localStorage.clear();setUser(null)}}>{page}</Layout>}

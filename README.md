@@ -1,137 +1,104 @@
-# Sistema de Gestão Odontológica
+# BELLEART OS
 
-Primeira versão funcional de um sistema simples para gestão de clínica odontológica, com frontend em React, backend em Node.js/Express e persistência local em SQLite.
+Sistema integrado para clínicas odontológicas, com frontend React/Vite, API Node.js/Express, SQLite, autenticação, permissões por perfil e trilha de auditoria.
 
-## Módulos disponíveis
+## Módulos
 
-- **Dashboard**: mostra a quantidade de pacientes cadastrados, consultas agendadas para hoje e orçamentos em tratamento.
-- **Pacientes**: cadastro, edição, listagem e exclusão de pacientes. O CPF é obrigatório e único. Também há campo de Telefone/WhatsApp.
-- **Orçamentos**: cadastro de orçamentos vinculados a pacientes com os status: Pendente, Aprovado, Em Tratamento, Concluído e Cancelado.
-- **Financeiro**: controle de receitas/despesas, status de pagamento e resumo com receitas, despesas, pendências e saldo.
-- **Agenda**: cadastro e gerenciamento de consultas com paciente, data, horário, procedimento, status e observações.
+- **Visão Geral:** Dashboard, Painel Executivo e Notificações.
+- **Clínica:** Pacientes, Agenda, Orçamentos, Documentos, CRM de Implantes, Indicações e Reativação.
+- **Marketing & Vendas:** Marketing, Campanhas, CRM, WhatsApp Inteligente, Tarefas Comerciais, Banco de Legendas, Calendário de Conteúdo, Assistente IA e Roteiros Reels.
+- **Gestão:** Financeiro, Financeiro de Implantes, Relatórios e Automações.
+- **Administração:** Configurações, Gestão & Backup, Usuários, Auditoria e Perfil.
 
-## Tecnologias
+Os CRUDs históricos de pacientes, agenda, orçamentos e financeiro foram preservados. Os módulos reintegrados usam `module_records`, uma estrutura comum e extensível que evita migrações destrutivas.
 
-### Backend
+## Perfis e permissões
 
-- Node.js
-- Express
-- SQLite
-- sqlite3
-- CORS
+- **Administrador:** acesso total.
+- **Dentista:** pacientes, agenda, orçamentos, documentos, CRM de implantes e leitura financeira.
+- **Recepção:** pacientes, agenda, WhatsApp, tarefas e notificações.
+- **Financeiro:** financeiro, financeiro de implantes, relatórios, documentos e parcelas.
+- **Marketing:** campanhas, CRM, WhatsApp, legendas, calendário, IA, roteiros, painel executivo e tarefas.
+- **Somente leitura:** consulta a todos os módulos, sem escrita.
 
-### Frontend
+O backend valida permissões independentemente do menu exibido no frontend. Alterações autenticadas geram registros de auditoria.
 
-- React
-- Vite
-- CSS simples
-
-## Estrutura do projeto
+## Estrutura
 
 ```text
-sistema-clinica/
-├── backend/
-│   ├── src/
-│   │   ├── database/
-│   │   ├── routes/
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── data/
-│   └── package.json
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── styles.css
-│   ├── index.html
-│   └── package.json
-├── .gitignore
-└── README.md
+backend/
+├── data/                 # clinic.db local (não versionado)
+├── src/
+│   ├── database/         # conexão e criação incremental das tabelas
+│   ├── routes/           # rotas históricas, autenticação e módulos
+│   ├── app.js            # API, compatibilidade e autorização
+│   ├── auth.js           # senha, token e RBAC
+│   └── server.js
+└── test/                 # testes nativos do Node.js
+frontend/
+├── src/
+│   ├── api/              # cliente HTTP autenticado
+│   ├── components/       # layout e menu agrupado
+│   ├── pages/            # login, CRUDs e página modular
+│   ├── App.jsx
+│   ├── modules.js        # catálogo e acesso dos módulos
+│   └── styles.css
+└── index.html
 ```
 
-## Como instalar e executar
+## Instalação e execução
 
-> Execute os comandos abaixo a partir da raiz do repositório.
-
-### 1. Instalar dependências do backend
+Requer Node.js 18 ou superior.
 
 ```bash
-cd backend
-npm install
+npm install --prefix backend
+npm install --prefix frontend
+npm start --prefix backend
 ```
-
-### 2. Iniciar o backend
-
-```bash
-npm run dev
-```
-
-A API ficará disponível em:
-
-```text
-http://localhost:3001
-```
-
-Endpoint de saúde:
-
-```text
-GET http://localhost:3001/api/health
-```
-
-### 3. Instalar dependências do frontend
 
 Em outro terminal:
 
 ```bash
-cd frontend
-npm install
+npm run dev --prefix frontend
 ```
 
-### 4. Iniciar o frontend
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:3001/api`
+- Saúde: `GET http://localhost:3001/api/health`
+
+### Primeiro acesso
+
+- E-mail: `admin@belleart.local`
+- Senha inicial: valor de `ADMIN_PASSWORD` ou, apenas em desenvolvimento, `admin123`.
+
+Em produção, configure obrigatoriamente:
 
 ```bash
-npm run dev
+export ADMIN_PASSWORD='uma-senha-forte'
+export AUTH_SECRET='um-segredo-longo-e-aleatorio'
 ```
 
-A aplicação ficará disponível em:
+O usuário administrador só é criado se ainda não existir; reiniciar a aplicação não sobrescreve usuários nem dados.
 
-```text
-http://localhost:5173
-```
+## API e compatibilidade
 
-## Banco de dados SQLite
+O login é público em `POST /api/auth/login`. Os demais endpoints, exceto `/api/health`, exigem `Authorization: Bearer <token>`.
 
-O banco é criado automaticamente ao iniciar o backend em:
+Endpoints históricos preservados:
 
-```text
-backend/data/clinic.db
-```
+- `/api/dashboard`
+- `/api/patients`
+- `/api/appointments`
+- `/api/budgets`
+- `/api/financial` e `/api/financial/summary`
 
-Esse arquivo não é versionado pelo Git, porque representa dados locais da instalação.
+Endpoints integrados incluem `/api/marketing`, `/api/campaigns`, `/api/implants/dashboard`, `/api/documents`, `/api/reports/summary`, `/api/users` e `/api/audit`.
 
-## Scripts úteis
-
-### Backend
+## Verificações
 
 ```bash
-npm run dev
-npm start
+npm run build --prefix frontend
+npm test --prefix backend
+find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
+git diff --check
 ```
-
-### Frontend
-
-```bash
-npm run dev
-npm run build
-npm run preview
-```
-
-## Observações da primeira versão
-
-- O sistema não possui autenticação nesta versão inicial.
-- As validações são simples e focadas nos campos obrigatórios.
-- O frontend usa navegação por estado interno, sem `react-router-dom`, para manter a base simples.
-- O CPF dos pacientes é salvo somente com números e deve ser único.
