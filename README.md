@@ -1,104 +1,123 @@
 # BELLEART OS
 
-Sistema integrado para clínicas odontológicas, com frontend React/Vite, API Node.js/Express, SQLite, autenticação, permissões por perfil e trilha de auditoria.
+Sistema integrado para clínicas odontológicas, composto por frontend React/Vite, API Node.js/Express e banco de dados SQLite.
 
-## Módulos
+## Requisitos
 
-- **Visão Geral:** Dashboard, Painel Executivo e Notificações.
-- **Clínica:** Pacientes, Agenda, Orçamentos, Documentos, CRM de Implantes, Indicações e Reativação.
-- **Marketing & Vendas:** Marketing, Campanhas, CRM, WhatsApp Inteligente, Tarefas Comerciais, Banco de Legendas, Calendário de Conteúdo, Assistente IA e Roteiros Reels.
-- **Gestão:** Financeiro, Financeiro de Implantes, Relatórios e Automações.
-- **Administração:** Configurações, Gestão & Backup, Usuários, Auditoria e Perfil.
+- Node.js 18 ou superior;
+- npm (instalado junto com o Node.js);
+- Windows para usar o inicializador `ABRIR_BELLEART_OS.bat`.
 
-Os CRUDs históricos de pacientes, agenda, orçamentos e financeiro foram preservados. Os módulos reintegrados usam `module_records`, uma estrutura comum e extensível que evita migrações destrutivas.
-
-## Perfis e permissões
-
-- **Administrador:** acesso total.
-- **Dentista:** pacientes, agenda, orçamentos, documentos, CRM de implantes e leitura financeira.
-- **Recepção:** pacientes, agenda, WhatsApp, tarefas e notificações.
-- **Financeiro:** financeiro, financeiro de implantes, relatórios, documentos e parcelas.
-- **Marketing:** campanhas, CRM, WhatsApp, legendas, calendário, IA, roteiros, painel executivo e tarefas.
-- **Somente leitura:** consulta a todos os módulos, sem escrita.
-
-O backend valida permissões independentemente do menu exibido no frontend. Alterações autenticadas geram registros de auditoria.
-
-## Estrutura
+## Estrutura do projeto
 
 ```text
-backend/
-├── data/                 # clinic.db local (não versionado)
-├── src/
-│   ├── database/         # conexão e criação incremental das tabelas
-│   ├── routes/           # rotas históricas, autenticação e módulos
-│   ├── app.js            # API, compatibilidade e autorização
-│   ├── auth.js           # senha, token e RBAC
-│   └── server.js
-└── test/                 # testes nativos do Node.js
-frontend/
-├── src/
-│   ├── api/              # cliente HTTP autenticado
-│   ├── components/       # layout e menu agrupado
-│   ├── pages/            # login, CRUDs e página modular
-│   ├── App.jsx
-│   ├── modules.js        # catálogo e acesso dos módulos
-│   └── styles.css
-└── index.html
+.
+├── ABRIR_BELLEART_OS.bat  # inicialização automática no Windows
+├── backend/
+│   ├── data/              # banco clinic.db local (não versionado)
+│   ├── src/               # API, autenticação, rotas e banco
+│   └── test/              # testes nativos do Node.js
+└── frontend/
+    └── src/
+        ├── api/           # cliente HTTP
+        ├── components/    # layout e navegação
+        └── pages/         # telas do sistema
 ```
 
-## Instalação e execução
+O banco SQLite é criado e atualizado de forma incremental. A inicialização não apaga nem recria os dados existentes.
 
-Requer Node.js 18 ou superior.
+## Execução rápida no Windows
+
+1. Instale o [Node.js](https://nodejs.org/) 18 ou superior.
+2. Dê dois cliques em `ABRIR_BELLEART_OS.bat`.
+3. Aguarde a abertura do navegador em `http://localhost:5173`.
+
+O arquivo instala dependências ausentes, abre o backend e o frontend em terminais separados e inicia o navegador automaticamente.
+
+## Instalação e execução manual
+
+Na raiz do projeto, instale as dependências:
 
 ```bash
 npm install --prefix backend
 npm install --prefix frontend
+```
+
+Inicie o backend:
+
+```bash
 npm start --prefix backend
 ```
 
-Em outro terminal:
+Em outro terminal, inicie o frontend:
 
 ```bash
 npm run dev --prefix frontend
 ```
 
+Endereços locais:
+
 - Frontend: `http://localhost:5173`
 - API: `http://localhost:3001/api`
-- Saúde: `GET http://localhost:3001/api/health`
+- Saúde da API: `http://localhost:3001/api/health`
 
-### Primeiro acesso
+## Primeiro acesso
 
 - E-mail: `admin@belleart.local`
-- Senha inicial: valor de `ADMIN_PASSWORD` ou, apenas em desenvolvimento, `admin123`.
+- Senha inicial: `admin123`
 
-Em produção, configure obrigatoriamente:
+O administrador inicial só é criado quando ainda não existe. Reiniciar o sistema não substitui usuários nem dados já cadastrados.
+
+Para definir credenciais seguras antes da primeira inicialização:
+
+### Windows (Prompt de Comando)
+
+```bat
+set ADMIN_PASSWORD=uma-senha-forte
+set AUTH_SECRET=um-segredo-longo-e-aleatorio
+```
+
+### Linux/macOS
 
 ```bash
 export ADMIN_PASSWORD='uma-senha-forte'
 export AUTH_SECRET='um-segredo-longo-e-aleatorio'
 ```
 
-O usuário administrador só é criado se ainda não existir; reiniciar a aplicação não sobrescreve usuários nem dados.
+## Módulos e permissões
 
-## API e compatibilidade
+- **Visão Geral:** Dashboard, Painel Executivo e Notificações.
+- **Clínica:** Pacientes, Agenda, Orçamentos, Documentos, CRM de Implantes, Indicações e Reativação.
+- **Marketing & Vendas:** Marketing, Campanhas, CRM, WhatsApp, tarefas, conteúdo e assistente de IA.
+- **Gestão:** Financeiro, Financeiro de Implantes, Relatórios e Automações.
+- **Administração:** Configurações, Gestão & Backup, Usuários, Auditoria e Perfil.
 
-O login é público em `POST /api/auth/login`. Os demais endpoints, exceto `/api/health`, exigem `Authorization: Bearer <token>`.
+Os perfis disponíveis são Administrador, Dentista, Recepção, Financeiro, Marketing e Somente leitura. O backend valida as permissões mesmo quando um item não aparece no menu.
 
-Endpoints históricos preservados:
+## Build e testes
 
-- `/api/dashboard`
-- `/api/patients`
-- `/api/appointments`
-- `/api/budgets`
-- `/api/financial` e `/api/financial/summary`
-
-Endpoints integrados incluem `/api/marketing`, `/api/campaigns`, `/api/implants/dashboard`, `/api/documents`, `/api/reports/summary`, `/api/users` e `/api/audit`.
-
-## Verificações
+Build de produção do frontend:
 
 ```bash
 npm run build --prefix frontend
-npm test --prefix backend
-find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
-git diff --check
 ```
+
+Testes do backend:
+
+```bash
+npm test --prefix backend
+```
+
+Verificação de sintaxe do backend:
+
+```bash
+find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
+```
+
+## Solução de problemas
+
+- **`node` ou `npm` não encontrado:** instale o Node.js e abra um novo terminal.
+- **Porta 3001 ocupada:** encerre outra instância do backend antes de iniciar.
+- **Porta 5173 ocupada:** o Vite poderá escolher outra porta; use o endereço exibido no terminal do frontend.
+- **Erro de login após alterar `ADMIN_PASSWORD`:** a variável só define a senha durante a criação do primeiro administrador; ela não sobrescreve um usuário existente.
+- **Falha ao conectar à API:** confirme que backend e frontend estão abertos e que `http://localhost:3001/api/health` responde.
