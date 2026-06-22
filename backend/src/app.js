@@ -24,6 +24,7 @@ const modules = {
 Object.entries(modules).forEach(([path, permission]) => app.use(`/api/${path}`, authorize(permission), createModuleRouter(path)));
 app.use('/api/implants/dashboard', authorize('implants'), createModuleRouter('implant-crm'));
 app.use('/api/reports/summary', authorize('reports'), (req, res) => res.json({ status: 'ok', generatedAt: new Date().toISOString() }));
+app.use('/api/marketing-ai', authorize('marketing'), require('./routes/marketingAi'));
 app.use('/api/users', authorize('users'), require('./routes/users'));
 app.use('/api/audit', authorize('users'), require('./routes/audit'));
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));

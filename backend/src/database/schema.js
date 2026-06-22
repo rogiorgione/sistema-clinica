@@ -73,8 +73,130 @@ async function initializeDatabase() {
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
   )`);
+
+
+  await run(`CREATE TABLE IF NOT EXISTS marketing_content_calendar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    publish_date TEXT NOT NULL,
+    week TEXT,
+    channel TEXT NOT NULL DEFAULT 'Instagram',
+    content_type TEXT NOT NULL DEFAULT 'Reels',
+    category TEXT,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    caption TEXT,
+    cta TEXT,
+    hashtags TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_captions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    caption TEXT NOT NULL,
+    cta TEXT,
+    hashtags TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_reels (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    hook TEXT NOT NULL,
+    script TEXT NOT NULL,
+    cta TEXT,
+    duration_seconds INTEGER NOT NULL DEFAULT 30,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_stories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    script TEXT NOT NULL,
+    cta TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform TEXT NOT NULL,
+    metric_date TEXT NOT NULL,
+    reach INTEGER NOT NULL DEFAULT 0,
+    views INTEGER NOT NULL DEFAULT 0,
+    followers INTEGER NOT NULL DEFAULT 0,
+    likes INTEGER NOT NULL DEFAULT 0,
+    shares INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_crm_leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT,
+    source TEXT,
+    interest TEXT,
+    stage TEXT NOT NULL DEFAULT 'Novo Lead',
+    notes TEXT,
+    next_contact_date TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_commercial_agenda (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lead_name TEXT NOT NULL,
+    contact_date TEXT NOT NULL,
+    contact_time TEXT,
+    channel TEXT NOT NULL DEFAULT 'WhatsApp',
+    reason TEXT,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_whatsapp_templates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    category TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  await seedMarketing();
+
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
+}
+
+
+async function seedMarketing() {
+  const count = await get('SELECT COUNT(*) AS total FROM marketing_captions');
+  if (count.total) return;
+  const categories = ['Implantes', 'Prótese Protocolo', 'Ortodontia', 'Botox', 'Harmonização', 'Clareamento'];
+  const storyCategories = ['Bastidores', 'Promoções', 'Autoridade', 'Depoimentos'];
+  const today = new Date();
+  for (let day = 1; day <= 30; day += 1) {
+    const category = categories[(day - 1) % categories.length];
+    const date = new Date(today); date.setDate(today.getDate() + day - 1);
+    const iso = date.toISOString().slice(0, 10);
+    await run('INSERT INTO marketing_reels (title, category, hook, script, cta, duration_seconds) VALUES (?, ?, ?, ?, ?, ?)', [`Reel ${day} - ${category}`, category, `Você sabia que ${category.toLowerCase()} pode transformar sorrisos?`, `Mostre uma dúvida frequente, explique em linguagem simples e finalize convidando para avaliação na BELLEART.`, 'Agende sua avaliação pelo WhatsApp.', 35]);
+    await run('INSERT INTO marketing_captions (title, category, caption, cta, hashtags) VALUES (?, ?, ?, ?, ?)', [`Legenda ${day} - ${category}`, category, `Conteúdo educativo sobre ${category.toLowerCase()} para ajudar pacientes a decidirem com segurança.`, 'Fale com a BELLEART e agende sua avaliação.', `#BELLEART #Odontologia #${category.replace(/\s/g, '')}`]);
+    await run('INSERT INTO marketing_content_calendar (title, publish_date, week, channel, content_type, category, status, caption, cta, hashtags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [`Post dia ${day} - ${category}`, iso, `Semana ${Math.ceil(day / 7)}`, 'Instagram', 'Reels', category, 'Pendente', `Legenda ${day} - ${category}`, 'Enviar mensagem no WhatsApp', `#BELLEART #${category.replace(/\s/g, '')}`]);
+    for (let s = 1; s <= 3; s += 1) {
+      const storyCategory = storyCategories[(day + s - 2) % storyCategories.length];
+      await run('INSERT INTO marketing_stories (title, category, script, cta) VALUES (?, ?, ?, ?)', [`Story ${day}.${s} - ${storyCategory}`, storyCategory, `Story de ${storyCategory.toLowerCase()} com enquete, prova social ou bastidor da clínica.`, 'Responder no direct ou WhatsApp.']);
+    }
+  }
+  for (const platform of ['Instagram', 'TikTok', 'Facebook', 'WhatsApp']) {
+    await run('INSERT INTO marketing_metrics (platform, metric_date, reach, views, followers, likes, shares) VALUES (?, ?, ?, ?, ?, ?, ?)', [platform, today.toISOString().slice(0, 10), 0, 0, 0, 0, 0]);
+  }
+  for (const category of ['Implantes', 'Ortodontia', 'Prótese', 'Reativação', 'Pós-operatório']) {
+    await run('INSERT INTO marketing_whatsapp_templates (title, category, message) VALUES (?, ?, ?)', [`Mensagem - ${category}`, category, `Olá! Aqui é da BELLEART. Preparamos uma orientação sobre ${category.toLowerCase()} para você. Podemos te ajudar hoje?`]);
+  }
 }
 
 module.exports = initializeDatabase;

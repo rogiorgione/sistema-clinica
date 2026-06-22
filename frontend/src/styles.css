@@ -64,3 +64,11 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
 .inline-form { align-items: end; grid-template-columns: 1fr auto; }
 .record-title { display: block; font-size: 1.15rem!important; margin-bottom: .7rem; }
 .card small { color: #64748b; }
+.metrics-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 1.5rem; }
+.metric-card { background: linear-gradient(135deg, #fff, #eff6ff); border: 1px solid #dbeafe; border-radius: 16px; padding: 1rem; }
+.metric-card span { color: #475569; display: block; font-weight: 800; margin-bottom: .4rem; }
+.metric-card strong { color: #1d4ed8; font-size: 1.8rem; }
+.filters { gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.marketing-list { display: grid; gap: 1rem; }
+.marketing-card { display: grid; gap: .65rem; }
+.marketing-card p { color: #334155; line-height: 1.5; margin: 0; white-space: pre-wrap; }
