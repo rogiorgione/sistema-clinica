@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { clearStoredSession, onSessionExpired } from './api/client.js';
 import Layout from './components/Layout.jsx';
 import Appointments from './pages/Appointments.jsx';
 import Budgets from './pages/Budgets.jsx';
@@ -31,28 +32,51 @@ const fixedPages = {
   patients: Patients,
 };
 
-function getStoredUser() {
+function getStoredSessionUser() {
+  const token = localStorage.getItem('belleart_token');
+  const storedUser = localStorage.getItem('belleart_user');
+
+  if (!token || !storedUser) {
+    clearStoredSession();
+    return null;
+  }
+
   try {
-    return JSON.parse(localStorage.getItem('belleart_user'));
+    return JSON.parse(storedUser);
   } catch {
-    localStorage.removeItem('belleart_user');
+    clearStoredSession();
     return null;
   }
 }
 
 export default function App() {
-  const [user, setUser] = useState(getStoredUser);
+  const [user, setUser] = useState(getStoredSessionUser);
   const [activePage, setActivePage] = useState('dashboard');
 
+  useEffect(() => onSessionExpired(() => {
+    setActivePage('dashboard');
+    setUser(null);
+  }), []);
+
+  function handleLogin(sessionUser) {
+    if (!localStorage.getItem('belleart_token')) {
+      clearStoredSession();
+      setUser(null);
+      return;
+    }
+
+    setActivePage('dashboard');
+    setUser(sessionUser);
+  }
+
   function handleLogout() {
-    localStorage.removeItem('belleart_token');
-    localStorage.removeItem('belleart_user');
+    clearStoredSession();
     setActivePage('dashboard');
     setUser(null);
   }
 
   if (!user) {
-    return <Login onLogin={setUser} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   const PageComponent = fixedPages[activePage];

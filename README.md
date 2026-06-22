@@ -149,3 +149,12 @@ find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
 - **Porta 5173 ocupada:** o Vite poderá escolher outra porta; use o endereço exibido no terminal do frontend.
 - **Erro de login após alterar `ADMIN_PASSWORD`:** a variável só define a senha durante a criação do primeiro administrador; ela não sobrescreve um usuário existente.
 - **Falha ao conectar à API:** confirme que backend e frontend estão abertos e que `http://localhost:3001/api/health` responde.
+
+## Sessão e autenticação
+
+O frontend mantém a sessão em duas chaves do navegador:
+
+- `belleart_token`: token usado no cabeçalho `Authorization` das chamadas para a API.
+- `belleart_user`: dados do usuário autenticado em JSON.
+
+Se uma dessas chaves não existir ou estiver inválida, o sistema limpa a sessão local e mostra a tela de login. Se qualquer rota autenticada da API responder `401`, o frontend apaga automaticamente `belleart_token` e `belleart_user` e retorna para o login, impedindo que o Dashboard permaneça visível sem autenticação.
