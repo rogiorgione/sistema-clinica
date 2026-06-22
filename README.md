@@ -329,3 +329,42 @@ npm install --prefix frontend
 npm start --prefix backend
 npm run dev --prefix frontend
 ```
+
+## BELLEART Marketing AI - Fase 8
+
+A Fase 8 adiciona a **Central de Tráfego e Integrações Sociais** sem apagar o SQLite e sem remover pacientes ou dados existentes. Todas as tabelas são criadas com `CREATE TABLE IF NOT EXISTS`.
+
+Módulos no frontend:
+
+- Central de Tráfego;
+- Campanhas;
+- Plataformas;
+- Leads por origem;
+- Métricas;
+- Dashboard ROI;
+- Integrações;
+- Configurações de API.
+
+Rotas autenticadas principais:
+
+```text
+GET/POST /api/ads/campaigns
+GET/POST /api/ads/platforms
+GET/POST /api/ads/leads
+GET/POST /api/ads/metrics
+GET      /api/ads/dashboard
+GET/POST /api/social/integrations
+GET/POST /api/social/accounts
+GET/POST /api/social/tokens
+GET/POST /api/social/posts
+GET/POST /api/social/metrics
+GET/POST /api/social/webhooks
+GET/POST /api/api-credentials
+```
+
+Segurança das integrações:
+
+- O sistema **não solicita senhas** de Facebook, Instagram, TikTok, Google ou WhatsApp.
+- O sistema **não armazena senhas** de redes sociais.
+- A preparação usa OAuth, `app_id`, `app_secret`, `client_id`, `client_secret`, `access_token`, `refresh_token`, escopos e permissões oficiais.
+- Conectores preparados: Meta Graph API, Instagram Graph API, Facebook Pages API, Meta Marketing API, TikTok Content Posting API, TikTok Business API, Google Ads API e WhatsApp Business API.

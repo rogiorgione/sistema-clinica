@@ -10,6 +10,7 @@ import MarketingAI from './pages/MarketingAI.jsx';
 import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import CommercialCenter from './pages/CommercialCenter.jsx';
+import TrafficCenter from './pages/TrafficCenter.jsx';
 import ModulePage from './pages/ModulePage.jsx';
 import Patients from './pages/Patients.jsx';
 import { groups } from './modules.js';
@@ -98,8 +99,11 @@ export default function App() {
       </Layout>
     );
   }
+  const trafficPages = ['trafficCenter', 'trafficCampaigns', 'trafficPlatforms', 'trafficLeads', 'trafficMetrics', 'trafficRoi', 'socialIntegrations', 'apiSettings'];
   const commercialPages = ['commercial', 'pipeline', 'leads', 'followup', 'objections', 'crmCampaigns', 'commercialReports', 'commercialDashboard'];
-  const page = commercialPages.includes(activePage) ? (
+  const page = trafficPages.includes(activePage) ? (
+    <TrafficCenter page={activePage} readOnly={readOnly} />
+  ) : commercialPages.includes(activePage) ? (
     <CommercialCenter page={activePage} readOnly={readOnly} />
   ) : marketingResources[activePage] ? (
     <MarketingAI resource={marketingResources[activePage]} readOnly={readOnly} />

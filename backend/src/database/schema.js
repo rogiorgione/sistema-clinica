@@ -430,6 +430,8 @@ async function initializeDatabase() {
   await seedLeadCapture();
   await seedAiAssistant();
 
+  await initializeTrafficAndSocial();
+
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
 }
@@ -559,6 +561,45 @@ async function seedAiAssistant() {
         const notes = `Seed Fase 6 nº ${index + 1} para ${category}.`;
         await run(`INSERT OR IGNORE INTO ${table} (title, category, prompt, content, cta, notes) VALUES (?, ?, ?, ?, ?, ?)`, [title, category, prompt, content, cta, notes]);
       }
+    }
+  }
+}
+
+async function initializeTrafficAndSocial() {
+  await run(`CREATE TABLE IF NOT EXISTS ads_platforms (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, type TEXT NOT NULL DEFAULT 'paid', status TEXT NOT NULL DEFAULT 'Preparado', official_api TEXT, oauth_scopes TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  await run(`CREATE TABLE IF NOT EXISTS ads_campaigns (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, platform TEXT NOT NULL, objective TEXT, status TEXT NOT NULL DEFAULT 'Ativa', budget REAL NOT NULL DEFAULT 0, spent REAL NOT NULL DEFAULT 0, start_date TEXT, end_date TEXT, target_audience TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  await run(`CREATE TABLE IF NOT EXISTS ads_metrics (id INTEGER PRIMARY KEY AUTOINCREMENT, campaign_id INTEGER, platform TEXT NOT NULL, metric_date TEXT NOT NULL DEFAULT CURRENT_DATE, impressions INTEGER NOT NULL DEFAULT 0, reach INTEGER NOT NULL DEFAULT 0, clicks INTEGER NOT NULL DEFAULT 0, leads INTEGER NOT NULL DEFAULT 0, cost_per_lead REAL NOT NULL DEFAULT 0, scheduled_consultations INTEGER NOT NULL DEFAULT 0, closed_treatments INTEGER NOT NULL DEFAULT 0, revenue_generated REAL NOT NULL DEFAULT 0, roi REAL NOT NULL DEFAULT 0, conversion_rate REAL NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (campaign_id) REFERENCES ads_campaigns(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS ads_leads (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, phone TEXT, email TEXT, source TEXT, platform TEXT, campaign_id INTEGER, interest TEXT, status TEXT NOT NULL DEFAULT 'Novo lead', scheduled_consultation INTEGER NOT NULL DEFAULT 0, closed_treatment INTEGER NOT NULL DEFAULT 0, revenue REAL NOT NULL DEFAULT 0, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (campaign_id) REFERENCES ads_campaigns(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS ads_budget (id INTEGER PRIMARY KEY AUTOINCREMENT, campaign_id INTEGER, platform TEXT, month TEXT NOT NULL, planned_amount REAL NOT NULL DEFAULT 0, spent_amount REAL NOT NULL DEFAULT 0, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (campaign_id) REFERENCES ads_campaigns(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS social_integrations (id INTEGER PRIMARY KEY AUTOINCREMENT, platform TEXT NOT NULL UNIQUE, provider TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Preparado', oauth_authorize_url TEXT, oauth_scopes TEXT, webhook_url TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  await run(`CREATE TABLE IF NOT EXISTS social_accounts (id INTEGER PRIMARY KEY AUTOINCREMENT, integration_id INTEGER, platform TEXT NOT NULL, account_name TEXT NOT NULL, account_external_id TEXT, status TEXT NOT NULL DEFAULT 'Preparado', permissions TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (integration_id) REFERENCES social_integrations(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS social_tokens (id INTEGER PRIMARY KEY AUTOINCREMENT, integration_id INTEGER, account_id INTEGER, token_type TEXT NOT NULL DEFAULT 'Bearer', access_token TEXT, refresh_token TEXT, expires_at TEXT, scopes TEXT, status TEXT NOT NULL DEFAULT 'Preparado', created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (integration_id) REFERENCES social_integrations(id) ON DELETE SET NULL, FOREIGN KEY (account_id) REFERENCES social_accounts(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS social_posts (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id INTEGER, platform TEXT NOT NULL, title TEXT NOT NULL, content TEXT, media_url TEXT, status TEXT NOT NULL DEFAULT 'Rascunho', scheduled_at TEXT, published_at TEXT, external_post_id TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (account_id) REFERENCES social_accounts(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS social_post_metrics (id INTEGER PRIMARY KEY AUTOINCREMENT, post_id INTEGER, platform TEXT NOT NULL, metric_date TEXT NOT NULL DEFAULT CURRENT_DATE, impressions INTEGER NOT NULL DEFAULT 0, reach INTEGER NOT NULL DEFAULT 0, clicks INTEGER NOT NULL DEFAULT 0, likes INTEGER NOT NULL DEFAULT 0, comments INTEGER NOT NULL DEFAULT 0, shares INTEGER NOT NULL DEFAULT 0, saves INTEGER NOT NULL DEFAULT 0, leads INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (post_id) REFERENCES social_posts(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS social_webhooks (id INTEGER PRIMARY KEY AUTOINCREMENT, integration_id INTEGER, platform TEXT NOT NULL, event_type TEXT NOT NULL, callback_url TEXT, verify_token_hint TEXT, status TEXT NOT NULL DEFAULT 'Preparado', last_payload TEXT, last_received_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (integration_id) REFERENCES social_integrations(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS api_credentials (id INTEGER PRIMARY KEY AUTOINCREMENT, provider TEXT NOT NULL, app_id TEXT, app_secret TEXT, client_id TEXT, client_secret TEXT, redirect_uri TEXT, scopes TEXT, status TEXT NOT NULL DEFAULT 'Preparado', notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(provider))`);
+  await seedTrafficAndSocial();
+}
+
+async function seedTrafficAndSocial() {
+  const platforms = [
+    ['Instagram','paid','Preparado','Instagram Graph API','instagram_basic,instagram_manage_insights,pages_show_list','OAuth oficial Meta/Instagram sem senhas.'],
+    ['Facebook','paid','Preparado','Meta Graph API, Facebook Pages API, Meta Marketing API','pages_show_list,pages_read_engagement,ads_read,ads_management','OAuth oficial Meta/Facebook sem senhas.'],
+    ['TikTok','paid','Preparado','TikTok Content Posting API, TikTok Business API','user.info.basic,video.publish,business.basic','OAuth oficial TikTok sem senhas.'],
+    ['Google Ads','paid','Preparado','Google Ads API','https://www.googleapis.com/auth/adwords','OAuth oficial Google sem senhas.'],
+    ['WhatsApp','owned','Preparado','WhatsApp Business API','whatsapp_business_management,whatsapp_business_messaging','Token oficial da Meta Cloud API.'],
+    ['Indicação','organic','Ativa','Manual','','Origem manual.'], ['Site','organic','Ativa','Formulário do site','','Origem manual/site.'], ['Panfleto','offline','Ativa','QR Code','','Origem offline.']
+  ];
+  for (const item of platforms) await run('INSERT OR IGNORE INTO ads_platforms (name,type,status,official_api,oauth_scopes,notes) VALUES (?,?,?,?,?,?)', item);
+  for (const item of platforms.slice(0,5)) await run('INSERT OR IGNORE INTO social_integrations (platform,provider,status,oauth_scopes,notes) VALUES (?,?,?,?,?)', [item[0], item[3], 'Preparado', item[4], item[5]]);
+  for (const provider of ['Meta Graph API','Instagram Graph API','Facebook Pages API','Meta Marketing API','TikTok Content Posting API','TikTok Business API','Google Ads API','WhatsApp Business API']) await run('INSERT OR IGNORE INTO api_credentials (provider,status,notes) VALUES (?,?,?)', [provider, 'Preparado', 'Cadastrar app_id/app_secret/client_id e tokens oficiais. Nunca armazenar senhas de redes sociais.']);
+  const count = await get('SELECT COUNT(*) AS total FROM ads_campaigns');
+  if (!count.total) {
+    const names = ['Implantes Premium','Prótese Protocolo','Ortodontia','Botox','Clareamento','Harmonização Facial'];
+    const plats = ['Instagram','Facebook','TikTok','Google Ads','Instagram','Facebook'];
+    for (let i=0;i<names.length;i+=1) {
+      const result = await run('INSERT INTO ads_campaigns (name,platform,objective,status,budget,spent,start_date,target_audience,notes) VALUES (?,?,?,?,?,?,?,?,?)', [names[i], plats[i], 'Gerar leads qualificados', 'Ativa', 1000 + i*250, 200 + i*75, new Date().toISOString().slice(0,10), 'Pacientes odontológicos', 'Seed Fase 8']);
+      await run('INSERT INTO ads_metrics (campaign_id,platform,metric_date,impressions,reach,clicks,leads,cost_per_lead,scheduled_consultations,closed_treatments,revenue_generated,roi,conversion_rate) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)', [result.id, plats[i], new Date().toISOString().slice(0,10), 10000+i*1000, 7000+i*800, 300+i*30, 20+i*3, 10+i, 5+i, 1+i%3, 5000+i*1200, 100, 8+i]);
     }
   }
 }
