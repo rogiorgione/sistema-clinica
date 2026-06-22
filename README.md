@@ -135,6 +135,31 @@ POST /api/marketing-ai/crm/:id/whatsapp-contact
 
 As rotas genéricas `GET`, `POST` e `PUT` de `/api/marketing-ai/crm` continuam disponíveis para listar, criar e atualizar leads.
 
+## BELLEART Marketing AI - Fase 3
+
+A Fase 3 adiciona captação automática de leads ao CRM comercial, mantendo o SQLite aditivo com novas tabelas criadas por `CREATE TABLE IF NOT EXISTS` e novas colunas adicionadas apenas quando faltarem.
+
+Recursos principais no menu **Marketing & Vendas > Captação de Leads**:
+
+- **Fontes de lead:** Instagram, TikTok, Facebook, WhatsApp, Indicação, Panfleto, Google e Tráfego pago.
+- **Links/códigos de campanha:** código interno, origem, tratamento, responsável, status, custo, observações e campo de integração futura.
+- **Formulário rápido:** nome, telefone, interesse, origem, campanha e observação. Ao salvar, o lead entra automaticamente no Kanban do CRM em **Novo lead**.
+- **Painel de captação:** leads por origem, leads por campanha, custo por lead, avaliações marcadas e fechamentos.
+- **Preparação futura:** campos e seeds para Meta Ads, TikTok Ads, WhatsApp Business API e QR Code de panfleto.
+
+Rotas específicas da API autenticada para a Fase 3:
+
+```text
+GET  /api/marketing-ai/sources
+POST /api/marketing-ai/sources
+GET  /api/marketing-ai/campaigns
+POST /api/marketing-ai/campaigns
+GET  /api/marketing-ai/capture/dashboard
+POST /api/marketing-ai/capture/leads
+```
+
+As rotas genéricas `PUT /api/marketing-ai/:resource/:id` também permitem atualizar fontes e campanhas.
+
 ## Módulos e permissões
 
 - **Visão Geral:** Dashboard, Painel Executivo e Notificações.

@@ -15,7 +15,7 @@ const legacy = [
 ];
 legacy.forEach(([path, permission, route]) => app.use(`/api${path}`, authorize(permission), require(route)));
 const modules = {
-  marketing: 'marketing', campaigns: 'campaigns', crm: 'crm', 'implant-crm': 'implants',
+  marketing: 'marketing', 'lead-capture': 'marketing', campaigns: 'campaigns', crm: 'crm', 'implant-crm': 'implants',
   'implant-financial': 'implant-financial', whatsapp: 'whatsapp', tasks: 'tasks', captions: 'captions',
   'content-calendar': 'content-calendar', 'ai-assistant': 'ai-assistant', reels: 'reels', executive: 'executive',
   documents: 'documents', notifications: 'notifications', referrals: 'patients', reactivation: 'marketing',
