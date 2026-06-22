@@ -13,6 +13,7 @@ import CommercialCenter from './pages/CommercialCenter.jsx';
 import TrafficCenter from './pages/TrafficCenter.jsx';
 import ModulePage from './pages/ModulePage.jsx';
 import Patients from './pages/Patients.jsx';
+import PremiumOS from './pages/PremiumOS.jsx';
 import { groups } from './modules.js';
 
 const marketingResources = {
@@ -34,6 +35,7 @@ const fixedPages = {
   dashboard: Dashboard,
   financial: Financial,
   patients: Patients,
+  'premium-os': PremiumOS,
 };
 
 function getStoredSessionUser() {

@@ -368,3 +368,32 @@ Segurança das integrações:
 - O sistema **não armazena senhas** de redes sociais.
 - A preparação usa OAuth, `app_id`, `app_secret`, `client_id`, `client_secret`, `access_token`, `refresh_token`, escopos e permissões oficiais.
 - Conectores preparados: Meta Graph API, Instagram Graph API, Facebook Pages API, Meta Marketing API, TikTok Content Posting API, TikTok Business API, Google Ads API e WhatsApp Business API.
+
+## BELLEART OS Premium - Fases 10 a 20
+
+A evolução Premium adiciona uma central única para marketing, vendas, atendimento, agenda, financeiro, documentos e inteligência artificial. A implementação preserva o SQLite e segue migrações aditivas com `CREATE TABLE IF NOT EXISTS`, `ALTER TABLE` apenas quando necessário e seeds com `INSERT OR IGNORE`.
+
+Novo módulo no menu **Visão Geral > BELLEART OS Premium**:
+
+- **Secretária Virtual IA:** prioriza leads, calcula score comercial, identifica leads quentes, sugere respostas de WhatsApp, recomenda ligações e lista pacientes esquecidos para reativação.
+- **Agendamento automático:** prepara confirmações, lembretes, faltosos, reagendamento, fila de encaixe e previsão de comparecimento.
+- **Painel executivo:** consolida ROI, CPL, campanhas, conversão, ticket médio, fechamentos, faturamento, produção e inadimplência.
+- **Financeiro avançado:** apresenta fluxo de caixa, DRE simplificada, previsão de faturamento, metas, parcelamentos, inadimplência e indicadores.
+- **BELLEART AI 24h:** mantém banco de prompts, geradores de Reels, Stories, campanhas, anúncios e respostas de WhatsApp no Assistente IA existente.
+- **Integrações oficiais:** estrutura preparada para Meta Graph API, Instagram Graph API, Meta Marketing API, TikTok Business API, TikTok Content Posting API, Google Ads API, WhatsApp Business API e Google Calendar API.
+- **Automação e inteligência comercial:** cria regras para calendário automático, publicação programada, análise de desempenho, ranking futuro de campanhas/conteúdos, leads quentes, campanhas lucrativas, pacientes esquecidos e responsáveis com maior conversão.
+- **Análise preditiva:** calcula previsões simples de faturamento, conversão, comparecimento e inadimplência a partir dos dados locais já existentes.
+- **Central de documentos:** cria base local para contratos, termos, assinatura digital futura e armazenamento local.
+
+Rotas autenticadas adicionadas:
+
+```text
+GET  /api/premium-os/virtual-secretary
+GET  /api/premium-os/automatic-scheduling
+GET  /api/premium-os/executive-panel
+GET  /api/premium-os/advanced-financial
+GET  /api/premium-os/integrations
+POST /api/premium-os/waitlist
+```
+
+As integrações externas ficam preparadas para OAuth e APIs oficiais. O sistema não solicita nem armazena senhas de Instagram, Facebook, TikTok ou WhatsApp.
