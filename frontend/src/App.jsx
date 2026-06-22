@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Financial from './pages/Financial.jsx';
 import Login from './pages/Login.jsx';
 import MarketingAI from './pages/MarketingAI.jsx';
+import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import ModulePage from './pages/ModulePage.jsx';
 import Patients from './pages/Patients.jsx';
@@ -23,7 +24,6 @@ const marketingResources = {
   crm: 'crm',
   tasks: 'agenda',
   whatsapp: 'whatsapp',
-  'ai-assistant': 'reels',
 };
 const pageLabels = Object.fromEntries(groups.flatMap((group) => group.items));
 const fixedPages = {
@@ -83,6 +83,13 @@ export default function App() {
 
   const PageComponent = fixedPages[activePage];
   const readOnly = user.role === 'leitura' || ['audit', 'users'].includes(activePage);
+  if (activePage === 'ai-assistant') {
+    return (
+      <Layout activePage={activePage} onChangePage={setActivePage} user={user} onLogout={handleLogout}>
+        <AssistantAI readOnly={readOnly} />
+      </Layout>
+    );
+  }
   if (activePage === 'content-calendar') {
     return (
       <Layout activePage={activePage} onChangePage={setActivePage} user={user} onLogout={handleLogout}>

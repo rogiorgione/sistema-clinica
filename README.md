@@ -236,3 +236,37 @@ O frontend mantém a sessão em duas chaves do navegador:
 - `belleart_user`: dados do usuário autenticado em JSON.
 
 Se uma dessas chaves não existir ou estiver inválida, o sistema limpa a sessão local e mostra a tela de login. Se qualquer rota autenticada da API responder `401`, o frontend apaga automaticamente `belleart_token` e `belleart_user` e retorna para o login, impedindo que o Dashboard permaneça visível sem autenticação.
+
+## BELLEART Marketing AI - Fase 6
+
+A Fase 6 cria o **Assistente IA BELLEART** com uma base própria para prompts, Reels, Stories, campanhas, WhatsApp, ganchos e respostas. As alterações são aditivas: o SQLite usa `CREATE TABLE IF NOT EXISTS`, mantém pacientes e registros existentes e adiciona seeds sem remover dados.
+
+Recursos principais no menu **Marketing & Vendas > Assistente IA**:
+
+- **Abas:** Reels, Stories, Campanhas, WhatsApp, Ganchos, Respostas e Banco de Prompts.
+- **Categorias:** Implantes, Ortodontia, Botox, Preenchimento, Clareamento e Próteses.
+- **Banco inicial:** centenas de exemplos prontos, com conteúdo ético, CTA e observações para uso pela equipe.
+- **Busca e filtro:** pesquisa por texto e categoria em todos os bancos do assistente.
+- **Cópia rápida:** botão para copiar prompt, conteúdo e CTA para uso operacional.
+
+Rotas específicas da API autenticada para a Fase 6:
+
+```text
+GET  /api/ai/summary
+GET  /api/ai/reels
+POST /api/ai/reels
+GET  /api/ai/stories
+POST /api/ai/stories
+GET  /api/ai/campaigns
+POST /api/ai/campaigns
+GET  /api/ai/whatsapp
+POST /api/ai/whatsapp
+GET  /api/ai/hooks
+POST /api/ai/hooks
+GET  /api/ai/responses
+POST /api/ai/responses
+GET  /api/ai/prompts
+POST /api/ai/prompts
+```
+
+As rotas `PUT /api/ai/:resource/:id` também permitem atualizar registros já salvos no Assistente IA.
