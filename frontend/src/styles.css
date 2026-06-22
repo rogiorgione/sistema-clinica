@@ -131,3 +131,12 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
 .enterprise-module p, .enterprise-grid p { color: #475569; line-height: 1.5; }
 .enterprise-kanban { grid-template-columns: repeat(6, minmax(220px, 1fr)); }
 .enterprise-metrics .metric-card strong { font-size: 1.45rem; }
+.enterprise-saas-page .tabs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin: 1rem 0; }
+.enterprise-saas-page .tabs-grid button { border: 1px solid #e5d7c5; border-radius: 14px; padding: 0.9rem; background: #fffaf5; color: #4b2e1f; font-weight: 700; cursor: pointer; }
+.enterprise-saas-page .tabs-grid button.active { background: linear-gradient(135deg, #7c3f22, #c48a54); color: white; }
+.enterprise-panel { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1rem; align-items: start; }
+.feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; }
+.feature-grid article, .enterprise-panel aside, .assurance-card { background: white; border: 1px solid #eadfD2; border-radius: 18px; padding: 1rem; box-shadow: 0 10px 30px rgba(82, 45, 20, 0.08); }
+.feature-grid span { display: block; color: #1f8a54; margin-top: 0.35rem; }
+.assurance-card { margin-top: 1rem; }
+@media (max-width: 900px) { .enterprise-panel { grid-template-columns: 1fr; } }
