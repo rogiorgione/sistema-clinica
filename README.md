@@ -112,6 +112,29 @@ PUT  /api/marketing-ai/:resource/:id
 
 Recursos aceitos em `:resource`: `calendar`, `captions`, `reels`, `stories`, `metrics`, `crm`, `agenda` e `whatsapp`.
 
+
+## BELLEART Marketing AI - Fase 2
+
+A Fase 2 adiciona um CRM comercial completo para captar, acompanhar e converter leads de **implantes**, **ortodontia**, **prótese** e **estética**. As alterações no SQLite são aditivas: novas colunas são incluídas com `ALTER TABLE` apenas quando ainda não existem, preservando os leads já cadastrados.
+
+Recursos principais no menu **Marketing & Vendas > CRM**:
+
+- **Kanban de leads:** etapas Novo lead, Interessado, Avaliação marcada, Negociação, Fechado e Perdido.
+- **Cadastro de lead:** nome, telefone/WhatsApp, interesse, origem, campanha, status, próximo contato e observações.
+- **Botão WhatsApp:** abre a conversa com mensagem pronta, registra o último contato e atualiza automaticamente o próximo contato.
+- **Agenda comercial:** separa leads para ligar hoje, leads atrasados e retornos futuros.
+- **Dashboard comercial:** total de leads, avaliações marcadas, fechados, perdidos e taxa de conversão.
+
+Rotas específicas da API autenticada para a Fase 2:
+
+```text
+GET  /api/marketing-ai/crm/dashboard
+GET  /api/marketing-ai/crm/agenda
+POST /api/marketing-ai/crm/:id/whatsapp-contact
+```
+
+As rotas genéricas `GET`, `POST` e `PUT` de `/api/marketing-ai/crm` continuam disponíveis para listar, criar e atualizar leads.
+
 ## Módulos e permissões
 
 - **Visão Geral:** Dashboard, Painel Executivo e Notificações.

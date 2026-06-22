@@ -1,4 +1,4 @@
-const { run, get } = require('./connection');
+const { run, get, all } = require('./connection');
 const { hashPassword } = require('../auth');
 
 async function initializeDatabase() {
@@ -137,14 +137,26 @@ async function initializeDatabase() {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     phone TEXT,
+    phone_whatsapp TEXT,
     source TEXT,
+    campaign TEXT,
     interest TEXT,
-    stage TEXT NOT NULL DEFAULT 'Novo Lead',
+    status TEXT NOT NULL DEFAULT 'Novo lead',
+    stage TEXT NOT NULL DEFAULT 'Novo lead',
     notes TEXT,
     next_contact_date TEXT,
+    last_contact_at TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`);
+  await addColumnIfMissing('marketing_crm_leads', 'phone_whatsapp', 'TEXT');
+  await addColumnIfMissing('marketing_crm_leads', 'campaign', 'TEXT');
+  await addColumnIfMissing('marketing_crm_leads', 'status', "TEXT NOT NULL DEFAULT 'Novo lead'");
+  await addColumnIfMissing('marketing_crm_leads', 'last_contact_at', 'TEXT');
+  await run(`UPDATE marketing_crm_leads SET phone_whatsapp = COALESCE(phone_whatsapp, phone) WHERE phone_whatsapp IS NULL`);
+  await run(`UPDATE marketing_crm_leads SET status = COALESCE(NULLIF(status, ''), NULLIF(stage, ''), 'Novo lead'), stage = COALESCE(NULLIF(stage, ''), NULLIF(status, ''), 'Novo lead')`);
+  await run(`UPDATE marketing_crm_leads SET status = 'Novo lead', stage = 'Novo lead' WHERE status = 'Novo Lead' OR stage = 'Novo Lead'`);
+  await run(`UPDATE marketing_crm_leads SET status = 'Avaliação marcada', stage = 'Avaliação marcada' WHERE status = 'Avaliação Marcada' OR stage = 'Avaliação Marcada'`);
   await run(`CREATE TABLE IF NOT EXISTS marketing_commercial_agenda (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lead_name TEXT NOT NULL,
@@ -172,6 +184,12 @@ async function initializeDatabase() {
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
 }
 
+async function addColumnIfMissing(table, column, definition) {
+  const columns = await all(`PRAGMA table_info(${table})`);
+  if (!columns.some((item) => item.name === column)) {
+    await run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
 
 async function seedMarketing() {
   const count = await get('SELECT COUNT(*) AS total FROM marketing_captions');

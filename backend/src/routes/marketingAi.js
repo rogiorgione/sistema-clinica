@@ -19,7 +19,7 @@ const searchColumns = {
   reels: ['title','category','hook','script','cta'],
   stories: ['title','category','script','cta'],
   metrics: ['platform'],
-  crm: ['name','phone','source','interest','stage','notes'],
+  crm: ['name','phone','phone_whatsapp','source','campaign','interest','status','stage','notes'],
   agenda: ['lead_name','channel','reason','status','notes'],
   whatsapp: ['title','category','message'],
 };
@@ -29,14 +29,80 @@ const columns = {
   reels: ['title','category','hook','script','cta','duration_seconds'],
   stories: ['title','category','script','cta'],
   metrics: ['platform','metric_date','reach','views','followers','likes','shares'],
-  crm: ['name','phone','source','interest','stage','notes','next_contact_date'],
+  crm: ['name','phone','phone_whatsapp','source','campaign','interest','status','stage','next_contact_date','last_contact_at','notes'],
   agenda: ['lead_name','contact_date','contact_time','channel','reason','status','notes'],
   whatsapp: ['title','category','message'],
 };
 
 function pick(body, resource) {
-  return Object.fromEntries(columns[resource].map((field) => [field, body[field] ?? null]));
+  const data = Object.fromEntries(columns[resource].map((field) => [field, body[field] ?? null]));
+  if (resource === 'crm') {
+    data.phone_whatsapp = data.phone_whatsapp || data.phone || null;
+    data.phone = data.phone || data.phone_whatsapp || null;
+    data.status = data.status || data.stage || 'Novo lead';
+    data.stage = data.status;
+  }
+  return data;
 }
+
+function todayIso() { return new Date().toISOString().slice(0, 10); }
+
+function addDaysIso(days) {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
+function normalizePhone(phone = '') {
+  const digits = String(phone).replace(/\D/g, '');
+  if (!digits) return '';
+  return digits.startsWith('55') ? digits : `55${digits}`;
+}
+
+async function commercialDashboard() {
+  const total = await get('SELECT COUNT(*) AS total FROM marketing_crm_leads');
+  const scheduled = await get('SELECT COUNT(*) AS total FROM marketing_crm_leads WHERE status = ?', ['Avaliação marcada']);
+  const closed = await get('SELECT COUNT(*) AS total FROM marketing_crm_leads WHERE status = ?', ['Fechado']);
+  const lost = await get('SELECT COUNT(*) AS total FROM marketing_crm_leads WHERE status = ?', ['Perdido']);
+  return {
+    total_leads: total.total,
+    scheduled_evaluations: scheduled.total,
+    closed: closed.total,
+    lost: lost.total,
+    conversion_rate: total.total ? Math.round((closed.total / total.total) * 1000) / 10 : 0,
+  };
+}
+
+
+router.get('/crm/dashboard', async (req, res, next) => {
+  try { res.json(await commercialDashboard()); } catch (error) { next(error); }
+});
+
+router.get('/crm/agenda', async (req, res, next) => {
+  try {
+    const today = todayIso();
+    const openWhere = "status NOT IN ('Fechado', 'Perdido') AND next_contact_date IS NOT NULL";
+    const [todayItems, overdue, future] = await Promise.all([
+      all(`SELECT * FROM marketing_crm_leads WHERE ${openWhere} AND next_contact_date = ? ORDER BY next_contact_date ASC, updated_at ASC`, [today]),
+      all(`SELECT * FROM marketing_crm_leads WHERE ${openWhere} AND next_contact_date < ? ORDER BY next_contact_date ASC, updated_at ASC`, [today]),
+      all(`SELECT * FROM marketing_crm_leads WHERE ${openWhere} AND next_contact_date > ? ORDER BY next_contact_date ASC, updated_at ASC`, [today]),
+    ]);
+    res.json({ today: todayItems, overdue, future });
+  } catch (error) { next(error); }
+});
+
+router.post('/crm/:id/whatsapp-contact', async (req, res, next) => {
+  try {
+    const lead = await get('SELECT * FROM marketing_crm_leads WHERE id = ?', [req.params.id]);
+    if (!lead) return res.status(404).json({ error: 'Lead não encontrado.' });
+    const nextContactDate = req.body.next_contact_date || addDaysIso(2);
+    await run('UPDATE marketing_crm_leads SET last_contact_at = CURRENT_TIMESTAMP, next_contact_date = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [nextContactDate, req.params.id]);
+    await audit(req, 'whatsapp_contact', 'marketing-ai:crm', `Lead ${req.params.id}`);
+    const updated = await get('SELECT * FROM marketing_crm_leads WHERE id = ?', [req.params.id]);
+    const text = req.body.message || `Olá, ${lead.name}! Aqui é da BELLEART. Vi seu interesse em ${lead.interest || 'nossos tratamentos'} e quero te ajudar a agendar uma avaliação.`;
+    res.json({ lead: updated, whatsapp_url: `https://wa.me/${normalizePhone(lead.phone_whatsapp || lead.phone)}?text=${encodeURIComponent(text)}` });
+  } catch (error) { next(error); }
+});
 
 router.get('/summary', async (req, res, next) => {
   try {

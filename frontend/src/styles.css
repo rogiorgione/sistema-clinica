@@ -72,3 +72,13 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
 .marketing-list { display: grid; gap: 1rem; }
 .marketing-card { display: grid; gap: .65rem; }
 .marketing-card p { color: #334155; line-height: 1.5; margin: 0; white-space: pre-wrap; }
+.agenda-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 1.5rem; }
+.agenda-grid p { color: #334155; margin: .45rem 0; }
+.kanban-board { align-items: start; display: grid; gap: 1rem; grid-template-columns: repeat(6, minmax(240px, 1fr)); overflow-x: auto; padding-bottom: 1rem; }
+.kanban-column { background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 18px; display: grid; gap: .8rem; min-height: 220px; padding: 1rem; }
+.kanban-column h3 { color: #312e81; font-size: 1rem; margin: 0; }
+.lead-card { box-shadow: none; display: grid; gap: .55rem; padding: 1rem; }
+.lead-card strong { font-size: 1.05rem!important; }
+.lead-card p { color: #334155; margin: 0; }
+.whatsapp-button { background: #16a34a; }
+.whatsapp-button:hover { background: #15803d; }
