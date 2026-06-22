@@ -122,3 +122,12 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
 .executive-card { border-color: #dbeafe; }
 .executive-card small, .insight-card p { color: #64748b; line-height: 1.5; }
 .insight-card strong { display: block; font-size: 1.6rem; margin-bottom: .5rem; }
+
+.enterprise-page { display: grid; gap: 1.5rem; }
+.enterprise-hero { background: linear-gradient(135deg, #111827, #2563eb); border-radius: 24px; color: #fff; padding: 2rem; }
+.enterprise-hero p { color: #dbeafe; max-width: 820px; }
+.enterprise-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.enterprise-module h3 { margin-top: 0; }
+.enterprise-module p, .enterprise-grid p { color: #475569; line-height: 1.5; }
+.enterprise-kanban { grid-template-columns: repeat(6, minmax(220px, 1fr)); }
+.enterprise-metrics .metric-card strong { font-size: 1.45rem; }
