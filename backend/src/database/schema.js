@@ -203,8 +203,93 @@ async function initializeDatabase() {
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`);
+  await run(`CREATE TABLE IF NOT EXISTS content_categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS content_ideas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    day_number INTEGER NOT NULL,
+    week TEXT NOT NULL,
+    month TEXT NOT NULL,
+    format TEXT NOT NULL,
+    category TEXT NOT NULL,
+    theme TEXT,
+    hook TEXT NOT NULL,
+    script TEXT NOT NULL,
+    caption TEXT NOT NULL,
+    cta TEXT NOT NULL,
+    hashtags TEXT NOT NULL,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(day_number, format)
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS content_calendar (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    scheduled_date TEXT NOT NULL,
+    day_number INTEGER NOT NULL,
+    week TEXT NOT NULL,
+    month TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    format TEXT NOT NULL,
+    category TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    idea_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(scheduled_date, platform, format),
+    FOREIGN KEY (idea_id) REFERENCES content_ideas(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS content_posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    idea_id INTEGER,
+    title TEXT NOT NULL,
+    scheduled_date TEXT NOT NULL,
+    week TEXT NOT NULL,
+    month TEXT NOT NULL,
+    platform TEXT NOT NULL,
+    format TEXT NOT NULL,
+    category TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    hook TEXT NOT NULL,
+    script TEXT NOT NULL,
+    caption TEXT NOT NULL,
+    cta TEXT NOT NULL,
+    hashtags TEXT NOT NULL,
+    duration_seconds INTEGER NOT NULL DEFAULT 0,
+    integration_target TEXT,
+    external_post_id TEXT,
+    notes TEXT,
+    published_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(idea_id, platform),
+    FOREIGN KEY (idea_id) REFERENCES content_ideas(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS content_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER,
+    platform TEXT NOT NULL,
+    metric_date TEXT NOT NULL,
+    reach INTEGER NOT NULL DEFAULT 0,
+    views INTEGER NOT NULL DEFAULT 0,
+    likes INTEGER NOT NULL DEFAULT 0,
+    comments INTEGER NOT NULL DEFAULT 0,
+    shares INTEGER NOT NULL DEFAULT 0,
+    saves INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES content_posts(id) ON DELETE SET NULL
+  )`);
+
 
   await seedMarketing();
+  await seedContentCalendar();
   await seedLeadCapture();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
@@ -256,6 +341,44 @@ async function seedMarketing() {
   }
   for (const category of ['Implantes', 'Ortodontia', 'Prótese', 'Reativação', 'Pós-operatório']) {
     await run('INSERT INTO marketing_whatsapp_templates (title, category, message) VALUES (?, ?, ?)', [`Mensagem - ${category}`, category, `Olá! Aqui é da BELLEART. Preparamos uma orientação sobre ${category.toLowerCase()} para você. Podemos te ajudar hoje?`]);
+  }
+}
+
+async function seedContentCalendar() {
+  const categoryNames = ['Implantes', 'Prótese Protocolo', 'Ortodontia', 'Botox', 'Preenchimento', 'Harmonização Facial', 'Clareamento', 'Próteses', 'Limpeza', 'Bastidores', 'Autoridade', 'Depoimentos'];
+  const themes = ['Bastidores', 'Antes e depois ético', 'Perguntas frequentes', 'Promoções', 'Autoridade', 'Depoimentos'];
+  const platforms = ['Instagram', 'TikTok', 'Facebook', 'WhatsApp'];
+  const formats = ['Reels', 'Stories', 'Carrosséis'];
+  for (const name of categoryNames) {
+    await run('INSERT OR IGNORE INTO content_categories (name, description) VALUES (?, ?)', [name, `Categoria editorial BELLEART para ${name}.`]);
+  }
+  const count = await get('SELECT COUNT(*) AS total FROM content_ideas');
+  if (count.total >= 1095) return;
+  const start = new Date('2026-01-01T00:00:00.000Z');
+  for (let day = 1; day <= 365; day += 1) {
+    const date = new Date(start); date.setUTCDate(start.getUTCDate() + day - 1);
+    const scheduledDate = date.toISOString().slice(0, 10);
+    const week = `Semana ${Math.ceil(day / 7)}`;
+    const month = scheduledDate.slice(0, 7);
+    for (const [formatIndex, format] of formats.entries()) {
+      const category = categoryNames[(day + formatIndex - 1) % categoryNames.length];
+      const theme = themes[(day + formatIndex - 1) % themes.length];
+      const platform = platforms[(day + formatIndex - 1) % platforms.length];
+      const title = `${format} Dia ${day} — ${category}`;
+      const hook = format === 'Stories' ? `Enquete rápida: você já tem dúvida sobre ${category}?` : `O que ninguém te explicou sobre ${category}`;
+      const script = `Conteúdo de ${theme.toLowerCase()} sobre ${category}. Explique em linguagem simples, evite promessas de resultado e convide para avaliação individual na BELLEART.`;
+      const caption = `${category}: informação segura, acolhedora e ética para ajudar você a cuidar do sorriso. Resultados variam conforme avaliação profissional.`;
+      const cta = platform === 'WhatsApp' ? 'Responder esta mensagem para agendar avaliação.' : 'Chame a BELLEART no WhatsApp e agende sua avaliação.';
+      const hashtags = `#BELLEART #Odontologia #${category.replace(/\s/g, '')} #${format.replace(/é/g, 'e')}`;
+      const duration = format === 'Stories' ? 15 : format === 'Reels' ? 35 : 0;
+      await run('INSERT OR IGNORE INTO content_ideas (day_number, week, month, format, category, theme, hook, script, caption, cta, hashtags, duration_seconds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [day, week, month, format, category, theme, hook, script, caption, cta, hashtags, duration]);
+      const idea = await get('SELECT id FROM content_ideas WHERE day_number = ? AND format = ?', [day, format]);
+      await run('INSERT OR IGNORE INTO content_calendar (scheduled_date, day_number, week, month, platform, format, category, status, idea_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [scheduledDate, day, week, month, platform, format, category, day % 11 === 0 ? 'Agendado' : 'Pendente', idea.id]);
+      await run('INSERT OR IGNORE INTO content_posts (idea_id, title, scheduled_date, week, month, platform, format, category, status, hook, script, caption, cta, hashtags, duration_seconds, integration_target) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [idea.id, title, scheduledDate, week, month, platform, format, category, day % 29 === 0 ? 'Publicado' : day % 11 === 0 ? 'Agendado' : 'Pendente', hook, script, caption, cta, hashtags, duration, platform]);
+    }
+  }
+  for (const platform of platforms) {
+    await run('INSERT INTO content_metrics (post_id, platform, metric_date, reach, views, likes, comments, shares, saves) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [null, platform, new Date().toISOString().slice(0, 10), 0, 0, 0, 0, 0, 0]);
   }
 }
 
