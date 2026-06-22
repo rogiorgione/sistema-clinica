@@ -397,3 +397,7 @@ POST /api/premium-os/waitlist
 ```
 
 As integrações externas ficam preparadas para OAuth e APIs oficiais. O sistema não solicita nem armazena senhas de Instagram, Facebook, TikTok ou WhatsApp.
+
+## Layout e Painel Executivo
+
+O frontend usa `frontend/src/components/Layout.jsx`, `frontend/src/components/Navigation.jsx` e `frontend/src/styles.css` para manter a sidebar organizada à esquerda e o conteúdo principal à direita. O módulo **Painel Executivo** possui página própria em `frontend/src/pages/ExecutivePanel.jsx`, evitando a tela genérica de módulos para essa visão estratégica.
