@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import MarketingAI from './pages/MarketingAI.jsx';
 import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
+import CommercialCenter from './pages/CommercialCenter.jsx';
 import ModulePage from './pages/ModulePage.jsx';
 import Patients from './pages/Patients.jsx';
 import { groups } from './modules.js';
@@ -97,7 +98,10 @@ export default function App() {
       </Layout>
     );
   }
-  const page = marketingResources[activePage] ? (
+  const commercialPages = ['commercial', 'pipeline', 'leads', 'followup', 'objections', 'crmCampaigns', 'commercialReports', 'commercialDashboard'];
+  const page = commercialPages.includes(activePage) ? (
+    <CommercialCenter page={activePage} readOnly={readOnly} />
+  ) : marketingResources[activePage] ? (
     <MarketingAI resource={marketingResources[activePage]} readOnly={readOnly} />
   ) : PageComponent ? (
     <PageComponent />

@@ -270,3 +270,62 @@ POST /api/ai/prompts
 ```
 
 As rotas `PUT /api/ai/:resource/:id` também permitem atualizar registros já salvos no Assistente IA.
+
+## BELLEART OS - Fase 7: Central Comercial Inteligente
+
+A Fase 7 transforma o BELLEART OS em uma central comercial para vendas odontológicas, mantendo todas as alterações aditivas. A inicialização preserva SQLite, pacientes, agenda, Marketing AI e dados existentes; as novas estruturas usam `CREATE TABLE IF NOT EXISTS`.
+
+Novas tabelas comerciais:
+
+- `crm_pipeline`
+- `crm_contacts`
+- `crm_tasks`
+- `crm_objections`
+- `crm_followups`
+- `crm_campaigns`
+- `crm_sales`
+- `crm_notifications`
+- `crm_metrics`
+
+Páginas adicionadas ao menu **Marketing & Vendas**:
+
+- **Central Comercial:** visão geral de leads, notificações, tarefas automáticas e follow-ups.
+- **Pipeline:** Kanban comercial por etapa.
+- **Leads:** cadastro de contatos com criação automática de tarefa, follow-up e notificação.
+- **Follow-up:** retornos pendentes por WhatsApp e outros canais.
+- **Objeções:** biblioteca inicial de objeções e respostas sugeridas.
+- **Campanhas:** cadastro e ranking por leads, vendas, conversão e ROI.
+- **Relatórios:** métricas de conversão e distribuição por etapa.
+- **Dashboard Comercial:** indicadores executivos de vendas.
+
+APIs autenticadas da Central Comercial:
+
+```text
+GET  /api/crm/pipeline
+POST /api/crm/pipeline
+PUT  /api/crm/pipeline/:id
+GET  /api/crm/leads
+POST /api/crm/leads
+PUT  /api/crm/leads/:id
+POST /api/crm/leads/:id/whatsapp-contact
+GET  /api/crm/followups
+POST /api/crm/followups
+PUT  /api/crm/followups/:id
+GET  /api/crm/tasks
+POST /api/crm/tasks
+PUT  /api/crm/tasks/:id
+GET  /api/crm/campaigns
+POST /api/crm/campaigns
+PUT  /api/crm/campaigns/:id
+GET  /api/crm/metrics
+GET  /api/crm/dashboard
+```
+
+Para executar a Fase 7 em desenvolvimento:
+
+```bash
+npm install --prefix backend
+npm install --prefix frontend
+npm start --prefix backend
+npm run dev --prefix frontend
+```
