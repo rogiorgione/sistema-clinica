@@ -430,6 +430,88 @@ async function initializeDatabase() {
   await seedLeadCapture();
   await seedAiAssistant();
 
+
+
+  await run(`CREATE TABLE IF NOT EXISTS appointment_waitlist (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id INTEGER,
+    patient_name TEXT NOT NULL,
+    phone_whatsapp TEXT,
+    requested_from TEXT NOT NULL,
+    requested_to TEXT,
+    procedure TEXT NOT NULL DEFAULT 'Consulta',
+    priority INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL DEFAULT 'Aguardando',
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS appointment_automations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    appointment_id INTEGER,
+    automation_type TEXT NOT NULL,
+    channel TEXT NOT NULL DEFAULT 'WhatsApp',
+    scheduled_at TEXT,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    message TEXT NOT NULL,
+    official_integration TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS financial_goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL UNIQUE,
+    target_amount REAL NOT NULL DEFAULT 0,
+    current_amount REAL NOT NULL DEFAULT 0,
+    target_date TEXT,
+    category TEXT NOT NULL DEFAULT 'Faturamento',
+    status TEXT NOT NULL DEFAULT 'Ativa',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS financial_installments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id INTEGER,
+    budget_id INTEGER,
+    description TEXT NOT NULL,
+    installment_number INTEGER NOT NULL DEFAULT 1,
+    total_installments INTEGER NOT NULL DEFAULT 1,
+    amount REAL NOT NULL DEFAULT 0,
+    due_date TEXT,
+    status TEXT NOT NULL DEFAULT 'pendente',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL,
+    FOREIGN KEY (budget_id) REFERENCES budgets(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS document_center (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    patient_id INTEGER,
+    title TEXT NOT NULL,
+    document_type TEXT NOT NULL DEFAULT 'Contrato',
+    local_path TEXT,
+    signature_status TEXT NOT NULL DEFAULT 'Pendente',
+    signature_provider TEXT NOT NULL DEFAULT 'Local',
+    content TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_automation_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL UNIQUE,
+    trigger_event TEXT NOT NULL,
+    channel TEXT NOT NULL DEFAULT 'WhatsApp',
+    status TEXT NOT NULL DEFAULT 'Ativa',
+    message_template TEXT NOT NULL,
+    official_integration TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await seedPremiumOs();
+
   await initializeTrafficAndSocial();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
@@ -563,6 +645,18 @@ async function seedAiAssistant() {
       }
     }
   }
+}
+
+async function seedPremiumOs() {
+  const rules = [
+    ['Confirmação automática de consulta', 'appointment_created', 'WhatsApp', 'Ativa', 'Olá, {nome}! Sua consulta na BELLEART está marcada para {data} às {hora}. Pode confirmar presença?', 'WhatsApp Business API'],
+    ['Lembrete 24h antes', 'appointment_reminder_24h', 'WhatsApp', 'Ativa', 'Lembrete BELLEART: esperamos você amanhã às {hora}.', 'WhatsApp Business API'],
+    ['Reativação de paciente esquecido', 'patient_inactive_90d', 'WhatsApp', 'Ativa', 'Olá, {nome}! Sentimos sua falta. Vamos agendar uma revisão?', 'WhatsApp Business API'],
+    ['Nutrição de lead quente', 'hot_lead_detected', 'WhatsApp', 'Ativa', 'Olá, {nome}! Posso te ajudar a escolher um horário para avaliação?', 'WhatsApp Business API'],
+  ];
+  for (const rule of rules) await run('INSERT OR IGNORE INTO marketing_automation_rules (title, trigger_event, channel, status, message_template, official_integration) VALUES (?, ?, ?, ?, ?, ?)', rule);
+  await run('INSERT OR IGNORE INTO financial_goals (title, target_amount, target_date, category, status) VALUES (?, ?, ?, ?, ?)', ['Meta mensal de faturamento BELLEART', 100000, new Date().toISOString().slice(0, 7) + '-28', 'Faturamento', 'Ativa']);
+  await run('INSERT OR IGNORE INTO document_center (title, document_type, signature_status, signature_provider, content) VALUES (?, ?, ?, ?, ?)', ['Modelo de contrato odontológico', 'Contrato', 'Modelo', 'Local', 'Modelo local para contrato, termos e assinatura digital futura.']);
 }
 
 async function initializeTrafficAndSocial() {

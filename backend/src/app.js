@@ -31,6 +31,7 @@ app.use('/api/api-credentials', authorize('marketing'), require('./routes/apiCre
 app.use('/api/crm', authorize('crm'), require('./routes/crm'));
 app.use('/api/ai', authorize('ai-assistant'), require('./routes/ai'));
 app.use('/api/content', authorize('content-calendar'), require('./routes/content'));
+app.use('/api/premium-os', authorize('executive'), require('./routes/premiumOs'));
 app.use('/api/users', authorize('users'), require('./routes/users'));
 app.use('/api/audit', authorize('users'), require('./routes/audit'));
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
