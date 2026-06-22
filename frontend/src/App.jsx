@@ -5,6 +5,7 @@ import Appointments from './pages/Appointments.jsx';
 import Budgets from './pages/Budgets.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ExecutivePanel from './pages/ExecutivePanel.jsx';
+import Enterprise from './pages/Enterprise.jsx';
 import Financial from './pages/Financial.jsx';
 import Login from './pages/Login.jsx';
 import MarketingAI from './pages/MarketingAI.jsx';
@@ -35,6 +36,7 @@ const fixedPages = {
   budgets: Budgets,
   dashboard: Dashboard,
   executive: ExecutivePanel,
+  enterprise: Enterprise,
   financial: Financial,
   patients: Patients,
   'premium-os': PremiumOS,

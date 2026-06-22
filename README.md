@@ -463,3 +463,26 @@ node -e "require('./backend/src/database/schema')().then(()=>console.log('schema
 3. Valide rotas principais com autenticação sempre que possível.
 4. Crie commit claro na branch atual.
 5. Abra Pull Request com resumo e testes executados.
+
+## BELLEART OS - Fase Enterprise
+
+A Fase Enterprise adiciona uma camada executiva sobre os módulos existentes sem remover dados e sem trocar o SQLite. As novas estruturas são criadas de forma incremental com `CREATE TABLE IF NOT EXISTS` e dados-base com `INSERT OR IGNORE`.
+
+Recursos principais:
+
+- **Central de Pacientes:** tabelas preparadas para ficha completa, odontograma, fotos, documentos, anexos, histórico clínico, tratamentos e evolução.
+- **Central de Agendas:** mantém a agenda atual e integra indicadores de consultas, faltosos, encaixes e confirmações automáticas.
+- **CRM Visual:** nova tela **Fase Enterprise** com Kanban profissional e drag and drop nas etapas Novo Lead, Contatado, Avaliação, Negociação, Fechado e Perdido.
+- **Financeiro Enterprise:** resumo de DRE mensal, fluxo de receitas/despesas, saldo e bases para metas, parcelamentos e inadimplência.
+- **Central de Marketing:** indicadores de campanhas, investimento, ROI/CPL e operação integrada a Instagram, TikTok, Facebook e WhatsApp.
+- **BELLEART AI e Automações:** consolida conteúdos, campanhas, objeções, follow-ups, lembretes, notificações e reativações.
+- **Dashboards:** bases registradas para Clínica, Marketing, CRM, Financeiro, WhatsApp e Premium.
+- **Backup e versão comercial:** registro de backup/restauração/exportação e arquitetura inicial para multiusuário, multiclínicas, assinatura mensal e licença SaaS.
+
+Rotas específicas da API autenticada:
+
+```text
+GET  /api/enterprise/summary
+PUT  /api/enterprise/crm/leads/:id/stage
+POST /api/enterprise/backups
+```

@@ -512,10 +512,25 @@ async function initializeDatabase() {
   )`);
   await seedPremiumOs();
 
+  await initializeEnterprisePhase();
+
   await initializeTrafficAndSocial();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
+}
+
+async function initializeEnterprisePhase() {
+  await run(`CREATE TABLE IF NOT EXISTS patient_clinical_records (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, record_type TEXT NOT NULL DEFAULT 'histórico clínico', title TEXT NOT NULL, description TEXT, professional TEXT, record_date TEXT NOT NULL DEFAULT CURRENT_DATE, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE)`);
+  await run(`CREATE TABLE IF NOT EXISTS patient_odontograms (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, tooth TEXT NOT NULL, condition TEXT NOT NULL DEFAULT 'saudável', treatment_plan TEXT, status TEXT NOT NULL DEFAULT 'planejado', notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE)`);
+  await run(`CREATE TABLE IF NOT EXISTS patient_media (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, media_type TEXT NOT NULL DEFAULT 'foto', title TEXT NOT NULL, file_path TEXT, document_type TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE)`);
+  await run(`CREATE TABLE IF NOT EXISTS patient_treatments (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER NOT NULL, title TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'planejado', start_date TEXT, end_date TEXT, estimated_amount REAL NOT NULL DEFAULT 0, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE)`);
+  await run(`CREATE TABLE IF NOT EXISTS enterprise_backups (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE, backup_type TEXT NOT NULL DEFAULT 'SQLite', status TEXT NOT NULL DEFAULT 'Preparado', storage_path TEXT, restored_at TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  await run(`CREATE TABLE IF NOT EXISTS enterprise_subscriptions (id INTEGER PRIMARY KEY AUTOINCREMENT, clinic_name TEXT NOT NULL UNIQUE, plan TEXT NOT NULL DEFAULT 'Enterprise', seats INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'Preparado', billing_cycle TEXT NOT NULL DEFAULT 'mensal', notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  await run(`CREATE TABLE IF NOT EXISTS enterprise_dashboards (id INTEGER PRIMARY KEY AUTOINCREMENT, dashboard_key TEXT NOT NULL UNIQUE, title TEXT NOT NULL, audience TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Ativo', notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
+  for (const item of [['clinic','Dashboard Clínica','Gestão clínica'],['marketing','Dashboard Marketing','Marketing'],['crm','Dashboard CRM','Comercial'],['financial','Dashboard Financeiro','Financeiro'],['whatsapp','Dashboard WhatsApp','Atendimento'],['premium','Dashboard Premium','Diretoria']]) await run('INSERT OR IGNORE INTO enterprise_dashboards (dashboard_key,title,audience,notes) VALUES (?,?,?,?)', [...item, 'Estrutura enterprise aditiva para indicadores reais.']);
+  await run('INSERT OR IGNORE INTO enterprise_backups (title, backup_type, status, storage_path, notes) VALUES (?, ?, ?, ?, ?)', ['Rotina automática SQLite', 'SQLite', 'Preparado', 'local://database.sqlite', 'Base preparada para backup, restauração e exportação sem apagar dados.']);
+  await run('INSERT OR IGNORE INTO enterprise_subscriptions (clinic_name, plan, seats, status, notes) VALUES (?, ?, ?, ?, ?)', ['BELLEART Clínica Matriz', 'Enterprise', 10, 'Preparado', 'Arquitetura futura para multiusuário, multiclínicas e SaaS.']);
 }
 
 async function addColumnIfMissing(table, column, definition) {
