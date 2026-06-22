@@ -203,6 +203,129 @@ async function initializeDatabase() {
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  await run(`CREATE TABLE IF NOT EXISTS crm_pipeline (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    position INTEGER NOT NULL DEFAULT 0,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_campaigns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    channel TEXT NOT NULL DEFAULT 'Instagram',
+    budget REAL NOT NULL DEFAULT 0,
+    cost REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'Ativa',
+    start_date TEXT,
+    end_date TEXT,
+    objective TEXT,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    phone TEXT,
+    phone_whatsapp TEXT,
+    email TEXT,
+    source TEXT,
+    campaign_id INTEGER,
+    interest TEXT,
+    pipeline_stage TEXT NOT NULL DEFAULT 'Novo lead',
+    status TEXT NOT NULL DEFAULT 'Novo lead',
+    temperature TEXT NOT NULL DEFAULT 'Morno',
+    estimated_value REAL NOT NULL DEFAULT 0,
+    notes TEXT,
+    next_contact_date TEXT,
+    last_contact_at TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (campaign_id) REFERENCES crm_campaigns(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER,
+    title TEXT NOT NULL,
+    description TEXT,
+    due_date TEXT,
+    due_time TEXT,
+    priority TEXT NOT NULL DEFAULT 'Média',
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    automatic INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_id) REFERENCES crm_contacts(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_objections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER,
+    category TEXT NOT NULL DEFAULT 'Preço',
+    objection TEXT NOT NULL,
+    suggested_response TEXT,
+    status TEXT NOT NULL DEFAULT 'Aberta',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_id) REFERENCES crm_contacts(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_followups (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER,
+    task_id INTEGER,
+    channel TEXT NOT NULL DEFAULT 'WhatsApp',
+    scheduled_date TEXT NOT NULL,
+    scheduled_time TEXT,
+    status TEXT NOT NULL DEFAULT 'Pendente',
+    message TEXT,
+    result TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_id) REFERENCES crm_contacts(id) ON DELETE SET NULL,
+    FOREIGN KEY (task_id) REFERENCES crm_tasks(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_sales (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER,
+    campaign_id INTEGER,
+    treatment TEXT NOT NULL,
+    amount REAL NOT NULL DEFAULT 0,
+    status TEXT NOT NULL DEFAULT 'Fechada',
+    sale_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_id) REFERENCES crm_contacts(id) ON DELETE SET NULL,
+    FOREIGN KEY (campaign_id) REFERENCES crm_campaigns(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER,
+    type TEXT NOT NULL DEFAULT 'followup',
+    title TEXT NOT NULL,
+    message TEXT,
+    due_date TEXT,
+    status TEXT NOT NULL DEFAULT 'Não lida',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_id) REFERENCES crm_contacts(id) ON DELETE SET NULL
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS crm_metrics (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    metric_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    total_leads INTEGER NOT NULL DEFAULT 0,
+    converted_leads INTEGER NOT NULL DEFAULT 0,
+    conversion_rate REAL NOT NULL DEFAULT 0,
+    revenue REAL NOT NULL DEFAULT 0,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await seedCrm();
+
   await run(`CREATE TABLE IF NOT EXISTS content_categories (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -315,6 +438,20 @@ async function addColumnIfMissing(table, column, definition) {
   const columns = await all(`PRAGMA table_info(${table})`);
   if (!columns.some((item) => item.name === column)) {
     await run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+async function seedCrm() {
+  const stages = ['Novo lead', 'Contato feito', 'Avaliação marcada', 'Proposta enviada', 'Negociação', 'Fechado', 'Perdido'];
+  for (const [index, stage] of stages.entries()) {
+    await run('INSERT OR IGNORE INTO crm_pipeline (name, description, position, active) VALUES (?, ?, ?, ?)', [stage, `Etapa comercial ${stage} da Fase 7.`, index + 1, 1]);
+  }
+  const count = await get('SELECT COUNT(*) AS total FROM crm_campaigns');
+  if (!count.total) {
+    await run('INSERT OR IGNORE INTO crm_objections (category, objection, suggested_response, status) VALUES (?, ?, ?, ?)', ['Preço', 'Está caro', 'Explique opções de pagamento, valor do planejamento e convide para avaliação individual.', 'Aberta']);
+    await run('INSERT OR IGNORE INTO crm_objections (category, objection, suggested_response, status) VALUES (?, ?, ?, ?)', ['Medo', 'Tenho medo do procedimento', 'Acolha a preocupação, explique as etapas com linguagem simples e reforce a avaliação profissional.', 'Aberta']);
+    await run('INSERT INTO crm_campaigns (name, channel, budget, cost, status, objective, notes) VALUES (?, ?, ?, ?, ?, ?, ?)', ['Avaliação de Implantes', 'Instagram', 1000, 0, 'Ativa', 'Gerar avaliações qualificadas', 'Campanha inicial da Central Comercial Inteligente']);
+    await run('INSERT INTO crm_campaigns (name, channel, budget, cost, status, objective, notes) VALUES (?, ?, ?, ?, ?, ?, ?)', ['Reativação WhatsApp', 'WhatsApp', 0, 0, 'Ativa', 'Retomar conversas paradas', 'Campanha inicial da Central Comercial Inteligente']);
   }
 }
 
