@@ -33,6 +33,7 @@ app.use('/api/ai', authorize('ai-assistant'), require('./routes/ai'));
 app.use('/api/content', authorize('content-calendar'), require('./routes/content'));
 app.use('/api/premium-os', authorize('executive'), require('./routes/premiumOs'));
 app.use('/api/enterprise', authorize('executive'), require('./routes/enterprise'));
+app.use('/api', authorize('executive'), require('./routes/enterpriseSaas'));
 app.use('/api/users', authorize('users'), require('./routes/users'));
 app.use('/api/audit', authorize('users'), require('./routes/audit'));
 app.use((req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));

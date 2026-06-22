@@ -486,3 +486,46 @@ GET  /api/enterprise/summary
 PUT  /api/enterprise/crm/leads/:id/stage
 POST /api/enterprise/backups
 ```
+
+## BELLEART OS Enterprise SaaS
+
+Este bloco adiciona uma base Enterprise SaaS **local-first**. O sistema continua usando SQLite e todas as tabelas novas são criadas de forma aditiva com `CREATE TABLE IF NOT EXISTS`, sem apagar pacientes, agenda, financeiro, marketing, CRM, WhatsApp, documentos, configurações, usuários, auditoria ou dados existentes.
+
+Nova página no menu **Visão Geral > Enterprise SaaS**:
+
+- Central Clínica: ficha clínica, odontograma, evolução, anamnese, planos, fotos, anexos, receitas, atestados e termos.
+- Central de Agenda: dia, semana, mês, encaixes, fila de espera, confirmações, faltosos, lembretes, salas e Google Calendar futuro por OAuth.
+- Central Comercial: CRM Kanban com etapas profissionais, temperatura, prioridade, origem, campanha, responsável, tarefas e histórico.
+- Central Financeira: DRE, fluxo de caixa, contas a pagar/receber, parcelamentos, inadimplência, metas, comissões e produção.
+- Central de Marketing: posts, criativos, assets, hashtags, rankings, ROI e CPL.
+- Central WhatsApp: conversas, contatos, etiquetas, responsáveis e preparação para WhatsApp Business API oficial.
+- BELLEART AI: agentes, tarefas, recomendações, conteúdos, relatórios e biblioteca de prompts.
+- Documentos, Automações, Relatórios, Backup, Segurança e preparação SaaS/multi-clínicas.
+- PWA preparado com `manifest.webmanifest` para instalação futura em celular, sem app nativo.
+
+### Segurança de integrações
+
+O BELLEART OS não deve armazenar senhas de Instagram, Facebook, TikTok, WhatsApp ou Google. Integrações externas devem ser ativadas futuramente somente por OAuth ou APIs oficiais, com tokens seguros no backend, refresh token e permissões claras. O frontend nunca deve receber segredos.
+
+### Rotas Enterprise
+
+Todas as rotas abaixo exigem autenticação e perfil autorizado. Exemplos:
+
+```text
+GET/POST /api/clinical/records
+GET/POST /api/clinical/odontogram
+GET      /api/agenda/day
+GET      /api/agenda/week
+GET      /api/agenda/month
+GET/POST /api/enterprise-crm/leads
+GET      /api/enterprise-crm/dashboard
+GET/POST /api/finance/dre
+GET      /api/finance/dashboard
+GET/POST /api/whatsapp-business/settings
+GET/POST /api/ai/prompts
+GET/POST /api/documents/templates
+GET/POST /api/automations/rules
+GET/POST /api/reports/templates
+GET/POST /api/backup/jobs
+GET/POST /api/saas/plans
+```

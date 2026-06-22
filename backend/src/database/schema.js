@@ -515,6 +515,7 @@ async function initializeDatabase() {
   await initializeEnterprisePhase();
 
   await initializeTrafficAndSocial();
+  await initializeEnterpriseSaas();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
@@ -531,6 +532,37 @@ async function initializeEnterprisePhase() {
   for (const item of [['clinic','Dashboard Clínica','Gestão clínica'],['marketing','Dashboard Marketing','Marketing'],['crm','Dashboard CRM','Comercial'],['financial','Dashboard Financeiro','Financeiro'],['whatsapp','Dashboard WhatsApp','Atendimento'],['premium','Dashboard Premium','Diretoria']]) await run('INSERT OR IGNORE INTO enterprise_dashboards (dashboard_key,title,audience,notes) VALUES (?,?,?,?)', [...item, 'Estrutura enterprise aditiva para indicadores reais.']);
   await run('INSERT OR IGNORE INTO enterprise_backups (title, backup_type, status, storage_path, notes) VALUES (?, ?, ?, ?, ?)', ['Rotina automática SQLite', 'SQLite', 'Preparado', 'local://database.sqlite', 'Base preparada para backup, restauração e exportação sem apagar dados.']);
   await run('INSERT OR IGNORE INTO enterprise_subscriptions (clinic_name, plan, seats, status, notes) VALUES (?, ?, ?, ?, ?)', ['BELLEART Clínica Matriz', 'Enterprise', 10, 'Preparado', 'Arquitetura futura para multiusuário, multiclínicas e SaaS.']);
+}
+
+
+async function initializeEnterpriseSaas() {
+  const genericTables = [
+    'clinical_records','clinical_evolutions','clinical_odontogram','clinical_anamnesis','clinical_treatment_plans','clinical_photos','clinical_attachments','clinical_prescriptions','clinical_certificates','clinical_consent_terms',
+    'appointment_confirmations','appointment_no_shows','appointment_reschedules','appointment_reminders','professional_schedules','google_calendar_links',
+    'enterprise_leads','enterprise_lead_history','enterprise_lead_tasks','enterprise_lead_scores','enterprise_lead_sources','enterprise_lead_campaigns',
+    'finance_cashflow','finance_revenues','finance_expenses','finance_accounts_payable','finance_accounts_receivable','finance_installments','finance_overdue','finance_goals','finance_commissions','finance_professional_production','finance_forecasts','finance_dre',
+    'marketing_posts','marketing_creatives','marketing_assets','marketing_hashtags','marketing_content_rankings','marketing_campaign_rankings','marketing_roi_reports',
+    'whatsapp_conversations','whatsapp_contacts','whatsapp_labels','whatsapp_responsibles','whatsapp_business_settings','whatsapp_webhook_events',
+    'ai_agents','ai_tasks','ai_outputs','ai_recommendations','ai_lead_scores','ai_content_generations','ai_report_generations','ai_prompt_library',
+    'documents','document_templates','document_signatures','document_patient_links','document_exports',
+    'automation_rules','automation_triggers','automation_actions','automation_logs','automation_queue',
+    'reports','report_templates','report_exports','report_schedules',
+    'backup_jobs','backup_files','backup_logs','system_health','security_events',
+    'saas_clinics','saas_units','saas_plans','saas_subscriptions','saas_licenses','saas_limits','saas_billing'
+  ];
+  for (const table of genericTables) {
+    await run(`CREATE TABLE IF NOT EXISTS ${table} (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Preparado', payload TEXT NOT NULL DEFAULT '{}', created_by INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL)`);
+  }
+  await run(`CREATE TABLE IF NOT EXISTS advanced_appointments (id INTEGER PRIMARY KEY AUTOINCREMENT, patient_id INTEGER, professional_id INTEGER, room_id INTEGER, title TEXT NOT NULL DEFAULT 'Consulta', start_at TEXT NOT NULL, end_at TEXT, status TEXT NOT NULL DEFAULT 'agendado', payload TEXT NOT NULL DEFAULT '{}', created_by INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE SET NULL, FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS appointment_rooms (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE, status TEXT NOT NULL DEFAULT 'Ativa', payload TEXT NOT NULL DEFAULT '{}', created_by INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL)`);
+  await run(`CREATE TABLE IF NOT EXISTS enterprise_pipeline_stages (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL UNIQUE, status TEXT NOT NULL DEFAULT 'Ativa', position INTEGER NOT NULL DEFAULT 0, payload TEXT NOT NULL DEFAULT '{}', created_by INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL)`);
+  for (const [index, stage] of ['Novo lead','Primeiro contato','Avaliação agendada','Avaliação realizada','Orçamento entregue','Negociação','Fechado','Perdido'].entries()) {
+    await run('INSERT OR IGNORE INTO enterprise_pipeline_stages (title, position, payload) VALUES (?, ?, ?)', [stage, index + 1, JSON.stringify({ kanban: true })]);
+  }
+  await run('INSERT OR IGNORE INTO appointment_rooms (title, payload) VALUES (?, ?)', ['Sala Clínica 1', JSON.stringify({ prepared_for_multi_room_schedule: true })]);
+  await run('INSERT OR IGNORE INTO saas_plans (title, status, payload) VALUES (?, ?, ?)', ['BELLEART Enterprise Local', 'Preparado', JSON.stringify({ local_sqlite: true, future_subscription: true })]);
+  await run('INSERT OR IGNORE INTO whatsapp_business_settings (title, status, payload) VALUES (?, ?, ?)', ['WhatsApp Business API Oficial', 'Não conectado', JSON.stringify({ provider: 'Meta Cloud API', stores_passwords: false, requires_authorization: true, token_storage: 'secure_reference_only' })]);
+  await run('INSERT OR IGNORE INTO google_calendar_links (title, status, payload) VALUES (?, ?, ?)', ['Google Calendar OAuth', 'Não conectado', JSON.stringify({ oauth: true, stores_passwords: false, official_api: true })]);
 }
 
 async function addColumnIfMissing(table, column, definition) {
