@@ -287,10 +287,25 @@ async function initializeDatabase() {
     FOREIGN KEY (post_id) REFERENCES content_posts(id) ON DELETE SET NULL
   )`);
 
+  for (const table of ['ai_prompts', 'ai_reels', 'ai_stories', 'ai_campaigns', 'ai_whatsapp', 'ai_hooks', 'ai_responses']) {
+    await run(`CREATE TABLE IF NOT EXISTS ${table} (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL,
+      prompt TEXT,
+      content TEXT NOT NULL,
+      cta TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(title, category)
+    )`);
+  }
 
   await seedMarketing();
   await seedContentCalendar();
   await seedLeadCapture();
+  await seedAiAssistant();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
@@ -379,6 +394,35 @@ async function seedContentCalendar() {
   }
   for (const platform of platforms) {
     await run('INSERT INTO content_metrics (post_id, platform, metric_date, reach, views, likes, comments, shares, saves) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', [null, platform, new Date().toISOString().slice(0, 10), 0, 0, 0, 0, 0, 0]);
+  }
+}
+
+
+async function seedAiAssistant() {
+  const resourceConfig = {
+    ai_prompts: ['Prompt', 'Crie uma peça educativa e ética sobre {category} para pacientes da BELLEART.'],
+    ai_reels: ['Reel', 'Roteiro curto com gancho, explicação simples, prova de autoridade e CTA para avaliação.'],
+    ai_stories: ['Story', 'Sequência de 3 stories com enquete, bastidor e chamada para conversa no WhatsApp.'],
+    ai_campaigns: ['Campanha', 'Campanha multicanal com objetivo, público, promessa ética, canais e acompanhamento.'],
+    ai_whatsapp: ['WhatsApp', 'Mensagem acolhedora para iniciar ou retomar conversa sem pressão comercial.'],
+    ai_hooks: ['Gancho', 'Gancho de abertura para vídeo curto com curiosidade e linguagem simples.'],
+    ai_responses: ['Resposta', 'Resposta para dúvida frequente com clareza, segurança e convite para avaliação individual.'],
+  };
+  const categories = ['Implantes', 'Ortodontia', 'Botox', 'Preenchimento', 'Clareamento', 'Próteses'];
+  const angles = ['dúvidas frequentes', 'mitos e verdades', 'cuidados antes do tratamento', 'cuidados depois do tratamento', 'benefícios percebidos', 'medos comuns', 'avaliação inicial', 'planejamento personalizado', 'tecnologia da clínica', 'segurança do paciente', 'bastidores', 'depoimento ético', 'comparação educativa', 'checklist', 'sinais de alerta', 'manutenção', 'tempo de tratamento', 'investimento consciente', 'perguntas para o dentista', 'convite para avaliação'];
+  for (const [table, [prefix, basePrompt]] of Object.entries(resourceConfig)) {
+    const count = await get(`SELECT COUNT(*) AS total FROM ${table}`);
+    if (count.total >= categories.length * angles.length) continue;
+    for (const category of categories) {
+      for (const [index, angle] of angles.entries()) {
+        const title = `${prefix} BELLEART ${category} — ${angle}`;
+        const prompt = basePrompt.replace('{category}', category);
+        const content = `${prefix} sobre ${category}: abordar ${angle} com linguagem humana, objetiva e ética. Explicar que cada caso precisa de avaliação profissional, evitar promessas de resultado e orientar o paciente a conversar com a equipe BELLEART.`;
+        const cta = 'Agende uma avaliação na BELLEART pelo WhatsApp.';
+        const notes = `Seed Fase 6 nº ${index + 1} para ${category}.`;
+        await run(`INSERT OR IGNORE INTO ${table} (title, category, prompt, content, cta, notes) VALUES (?, ?, ?, ?, ?, ?)`, [title, category, prompt, content, cta, notes]);
+      }
+    }
   }
 }
 

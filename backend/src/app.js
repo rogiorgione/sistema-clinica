@@ -25,6 +25,7 @@ Object.entries(modules).forEach(([path, permission]) => app.use(`/api/${path}`, 
 app.use('/api/implants/dashboard', authorize('implants'), createModuleRouter('implant-crm'));
 app.use('/api/reports/summary', authorize('reports'), (req, res) => res.json({ status: 'ok', generatedAt: new Date().toISOString() }));
 app.use('/api/marketing-ai', authorize('marketing'), require('./routes/marketingAi'));
+app.use('/api/ai', authorize('ai-assistant'), require('./routes/ai'));
 app.use('/api/content', authorize('content-calendar'), require('./routes/content'));
 app.use('/api/users', authorize('users'), require('./routes/users'));
 app.use('/api/audit', authorize('users'), require('./routes/audit'));
