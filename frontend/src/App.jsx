@@ -12,7 +12,7 @@ import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import CommercialCenter from './pages/CommercialCenter.jsx';
 import TrafficCenter from './pages/TrafficCenter.jsx';
-import ModulePage from './pages/ModulePage.jsx';
+import OperationalModulePage from './pages/OperationalModulePage.jsx';
 import Patients from './pages/Patients.jsx';
 import PremiumOS from './pages/PremiumOS.jsx';
 import { groups } from './modules.js';
@@ -88,7 +88,7 @@ export default function App() {
   }
 
   const PageComponent = fixedPages[activePage];
-  const readOnly = user.role === 'leitura' || ['audit', 'users'].includes(activePage);
+  const readOnly = user.role === 'leitura' || activePage === 'audit';
   if (activePage === 'ai-assistant') {
     return (
       <Layout activePage={activePage} onChangePage={setActivePage} user={user} onLogout={handleLogout}>
@@ -114,7 +114,7 @@ export default function App() {
   ) : PageComponent ? (
     <PageComponent />
   ) : (
-    <ModulePage
+    <OperationalModulePage
       title={pageLabels[activePage] || 'Módulo'}
       path={activePage}
       readOnly={readOnly}

@@ -19,7 +19,7 @@ const modules = {
   'implant-financial': 'implant-financial', whatsapp: 'whatsapp', tasks: 'tasks', captions: 'captions',
   'content-calendar': 'content-calendar', 'ai-assistant': 'ai-assistant', reels: 'reels', executive: 'executive',
   documents: 'documents', notifications: 'notifications', referrals: 'patients', reactivation: 'marketing',
-  reports: 'reports', automations: 'marketing', settings: 'profile', backups: 'users', profile: 'profile', installments: 'installments',
+  reports: 'reports', automations: 'marketing', settings: 'profile', backups: 'users', profile: 'profile', installments: 'installments', stories: 'content-calendar', metrics: 'marketing',
 };
 Object.entries(modules).forEach(([path, permission]) => app.use(`/api/${path}`, authorize(permission), createModuleRouter(path)));
 app.use('/api/implants/dashboard', authorize('implants'), createModuleRouter('implant-crm'));

@@ -401,3 +401,65 @@ As integrações externas ficam preparadas para OAuth e APIs oficiais. O sistema
 ## Layout e Painel Executivo
 
 O frontend usa `frontend/src/components/Layout.jsx`, `frontend/src/components/Navigation.jsx` e `frontend/src/styles.css` para manter a sidebar organizada à esquerda e o conteúdo principal à direita. O módulo **Painel Executivo** possui página própria em `frontend/src/pages/ExecutivePanel.jsx`, evitando a tela genérica de módulos para essa visão estratégica.
+
+## QA profissional e fluxo operacional
+
+### Como abrir o sistema
+
+- **Windows:** execute `ABRIR_BELLEART_OS.bat`. O script valida Node.js, instala dependências ausentes, encerra processos antigos nas portas 3001 e 5173, inicia backend/frontend e abre uma única janela do navegador.
+- **Manual:** use `npm start --prefix backend` e, em outro terminal, `npm run dev --prefix frontend`.
+
+### Login inicial
+
+- Usuário: `admin@belleart.local`
+- Senha: `admin123`
+
+Altere a senha inicial em ambiente real. O SQLite existente é preservado e o usuário inicial só é criado se ainda não houver administrador.
+
+### Módulos principais revisados
+
+O BELLEART OS organiza a operação em **Dashboard**, **Painel Executivo**, **Pacientes**, **Agenda**, **Orçamentos**, **Documentos**, **CRM de Implantes**, **Indicações**, **Reativação**, **Marketing**, **Captação de Leads**, **Campanhas**, **CRM**, **WhatsApp Inteligente**, **Tarefas Comerciais**, **Banco de Legendas**, **Calendário de Conteúdo**, **Assistente IA**, **Roteiros Reels**, **Banco de Stories**, **Métricas Sociais**, **Financeiro**, **Financeiro de Implantes**, **Relatórios**, **Automações**, **Configurações**, **Gestão & Backup**, **Usuários**, **Auditoria**, **Perfil**, **Central de Tráfego**, **Integrações Sociais** e **BELLEART OS Premium**.
+
+### Perfis de acesso
+
+- **Administrador:** acesso total.
+- **Dentista:** clínica, pacientes, agenda, documentos, orçamentos e leitura financeira essencial.
+- **Recepção:** pacientes, agenda, leads, notificações, CRM comercial e WhatsApp.
+- **Financeiro:** financeiro, relatórios, indicadores executivos e financeiro de implantes.
+- **Marketing:** marketing, vendas, CRM, WhatsApp, conteúdo, tráfego e dashboards comerciais.
+- **Somente leitura:** consulta os módulos sem criar, alterar ou apagar dados.
+
+### Como resolver porta ocupada
+
+O inicializador Windows já tenta liberar as portas. Manualmente, use:
+
+```bat
+netstat -ano | findstr :3001
+netstat -ano | findstr :5173
+taskkill /PID NUMERO_DO_PID /F
+```
+
+No Linux/macOS:
+
+```bash
+lsof -i :3001
+lsof -i :5173
+kill -9 NUMERO_DO_PID
+```
+
+### Como rodar build, testes e validações
+
+```bash
+npm run build --prefix frontend
+npm test --prefix backend
+find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
+node -e "require('./backend/src/database/schema')().then(()=>console.log('schema ok')).catch(e=>{console.error(e); process.exit(1)})"
+```
+
+### Fluxo padrão com Codex
+
+1. Faça alterações aditivas e seguras, preservando SQLite e dados existentes.
+2. Rode build do frontend, testes do backend, `node --check` e inicialização do schema.
+3. Valide rotas principais com autenticação sempre que possível.
+4. Crie commit claro na branch atual.
+5. Abra Pull Request com resumo e testes executados.
