@@ -84,6 +84,34 @@ export ADMIN_PASSWORD='uma-senha-forte'
 export AUTH_SECRET='um-segredo-longo-e-aleatorio'
 ```
 
+## BELLEART Marketing AI - Fase 1
+
+A Fase 1 transforma o BELLEART OS em uma base operacional de marketing odontológico. Ao iniciar o backend, o SQLite cria tabelas novas com `CREATE TABLE IF NOT EXISTS` e popula um planejamento inicial sem apagar dados existentes.
+
+Módulos disponíveis no menu **Marketing & Vendas**:
+
+- **Calendário de Conteúdo:** visão mensal/semanal, data de publicação, canal, formato, categoria e status `Pendente`, `Agendado` ou `Publicado`.
+- **Banco de Legendas:** categorias Implantes, Prótese Protocolo, Ortodontia, Botox, Harmonização e Clareamento, com busca, filtro, CTA, hashtags e botão para copiar.
+- **Biblioteca de Reels:** roteiro, gancho, CTA, duração e categoria.
+- **Banco de Stories:** ideias para Bastidores, Promoções, Autoridade e Depoimentos.
+- **Planejamento de 30 dias:** seed inicial com 30 Reels, 90 Stories e 30 legendas para acelerar a operação.
+- **Painel de Métricas:** estrutura para Instagram, TikTok, Facebook e WhatsApp com alcance, visualizações, seguidores, curtidas e compartilhamentos.
+- **CRM Comercial:** etapas Novo Lead, Interessado, Avaliação Marcada, Negociação, Fechado e Perdido.
+- **Agenda Comercial:** próximos contatos, canal, motivo, status e observações.
+- **WhatsApp Inteligente:** mensagens para Implantes, Ortodontia, Prótese, Reativação e Pós-operatório.
+- **Assistente IA de Marketing:** área prática para criar e armazenar ideias de Reels, legendas, stories, hashtags e carrosséis usando modelos simples editáveis.
+
+Principais rotas da API autenticada:
+
+```text
+GET  /api/marketing-ai/summary
+GET  /api/marketing-ai/:resource
+POST /api/marketing-ai/:resource
+PUT  /api/marketing-ai/:resource/:id
+```
+
+Recursos aceitos em `:resource`: `calendar`, `captions`, `reels`, `stories`, `metrics`, `crm`, `agenda` e `whatsapp`.
+
 ## Módulos e permissões
 
 - **Visão Geral:** Dashboard, Painel Executivo e Notificações.

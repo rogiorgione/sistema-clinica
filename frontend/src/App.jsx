@@ -5,10 +5,23 @@ import Budgets from './pages/Budgets.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Financial from './pages/Financial.jsx';
 import Login from './pages/Login.jsx';
+import MarketingAI from './pages/MarketingAI.jsx';
 import ModulePage from './pages/ModulePage.jsx';
 import Patients from './pages/Patients.jsx';
 import { groups } from './modules.js';
 
+const marketingResources = {
+  marketing: 'calendar',
+  'content-calendar': 'calendar',
+  captions: 'captions',
+  reels: 'reels',
+  stories: 'stories',
+  metrics: 'metrics',
+  crm: 'crm',
+  tasks: 'agenda',
+  whatsapp: 'whatsapp',
+  'ai-assistant': 'reels',
+};
 const pageLabels = Object.fromEntries(groups.flatMap((group) => group.items));
 const fixedPages = {
   appointments: Appointments,
@@ -43,13 +56,16 @@ export default function App() {
   }
 
   const PageComponent = fixedPages[activePage];
-  const page = PageComponent ? (
+  const readOnly = user.role === 'leitura' || ['audit', 'users'].includes(activePage);
+  const page = marketingResources[activePage] ? (
+    <MarketingAI resource={marketingResources[activePage]} readOnly={readOnly} />
+  ) : PageComponent ? (
     <PageComponent />
   ) : (
     <ModulePage
       title={pageLabels[activePage] || 'Módulo'}
       path={activePage}
-      readOnly={user.role === 'leitura' || ['audit', 'users'].includes(activePage)}
+      readOnly={readOnly}
     />
   );
 
