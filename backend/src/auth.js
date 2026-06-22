@@ -5,7 +5,7 @@ const SECRET = process.env.AUTH_SECRET || 'belleart-local-change-me';
 const ROLE_PERMISSIONS = {
   administrador: ['*'],
   dentista: ['dashboard', 'patients', 'appointments', 'budgets', 'documents', 'implants', 'financial:read', 'profile'],
-  recepcao: ['dashboard', 'patients', 'appointments', 'whatsapp', 'tasks', 'notifications', 'crm', 'profile'],
+  recepcao: ['dashboard', 'patients', 'appointments', 'whatsapp', 'tasks', 'notifications', 'crm', 'marketing', 'profile'],
   financeiro: ['dashboard', 'financial', 'implant-financial', 'reports', 'documents', 'installments', 'executive', 'profile'],
   marketing: ['dashboard', 'marketing', 'campaigns', 'crm', 'whatsapp', 'captions', 'content-calendar', 'ai-assistant', 'reels', 'executive', 'tasks', 'profile'],
   leitura: ['*:read', 'profile'],
