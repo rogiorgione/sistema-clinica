@@ -13,6 +13,7 @@ import { groups } from './modules.js';
 
 const marketingResources = {
   marketing: 'calendar',
+  'lead-capture': 'capture',
   'content-calendar': 'calendar',
   captions: 'captions',
   reels: 'reels',

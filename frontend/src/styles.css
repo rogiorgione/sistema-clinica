@@ -82,3 +82,6 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
 .lead-card p { color: #334155; margin: 0; }
 .whatsapp-button { background: #16a34a; }
 .whatsapp-button:hover { background: #15803d; }
+.capture-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 1.5rem; }
+.capture-grid p { color: #334155; margin: .5rem 0; }
+.form-grid h3 { color: #0f172a; margin: 0; }

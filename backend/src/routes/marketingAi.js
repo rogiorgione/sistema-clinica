@@ -12,6 +12,8 @@ const tables = {
   crm: { table: 'marketing_crm_leads', order: 'updated_at DESC, id DESC' },
   agenda: { table: 'marketing_commercial_agenda', order: 'contact_date ASC, contact_time ASC, id ASC' },
   whatsapp: { table: 'marketing_whatsapp_templates', order: 'category ASC, id ASC' },
+  sources: { table: 'marketing_lead_sources', order: 'active DESC, name ASC' },
+  campaigns: { table: 'marketing_campaign_links', order: 'updated_at DESC, id DESC' },
 };
 const searchColumns = {
   calendar: ['title','channel','content_type','category','status','caption','cta','hashtags','notes'],
@@ -22,6 +24,8 @@ const searchColumns = {
   crm: ['name','phone','phone_whatsapp','source','campaign','interest','status','stage','notes'],
   agenda: ['lead_name','channel','reason','status','notes'],
   whatsapp: ['title','category','message'],
+  sources: ['name','notes'],
+  campaigns: ['internal_code','origin','treatment','responsible','status','observations','future_integration'],
 };
 const columns = {
   calendar: ['title','publish_date','week','channel','content_type','category','status','caption','cta','hashtags','notes'],
@@ -29,9 +33,11 @@ const columns = {
   reels: ['title','category','hook','script','cta','duration_seconds'],
   stories: ['title','category','script','cta'],
   metrics: ['platform','metric_date','reach','views','followers','likes','shares'],
-  crm: ['name','phone','phone_whatsapp','source','campaign','interest','status','stage','next_contact_date','last_contact_at','notes'],
+  crm: ['name','phone','phone_whatsapp','source','campaign','campaign_code','interest','status','stage','next_contact_date','last_contact_at','notes'],
   agenda: ['lead_name','contact_date','contact_time','channel','reason','status','notes'],
   whatsapp: ['title','category','message'],
+  sources: ['name','active','notes'],
+  campaigns: ['internal_code','origin','treatment','responsible','status','cost','observations','future_integration'],
 };
 
 function pick(body, resource) {
@@ -73,6 +79,52 @@ async function commercialDashboard() {
   };
 }
 
+
+
+async function captureDashboard() {
+  const [byOrigin, byCampaign, totals, campaignCosts] = await Promise.all([
+    all(`SELECT COALESCE(source, 'Sem origem') AS label, COUNT(*) AS total FROM marketing_crm_leads GROUP BY COALESCE(source, 'Sem origem') ORDER BY total DESC, label ASC`),
+    all(`SELECT COALESCE(campaign_code, campaign, 'Sem campanha') AS label, COUNT(*) AS total FROM marketing_crm_leads GROUP BY COALESCE(campaign_code, campaign, 'Sem campanha') ORDER BY total DESC, label ASC`),
+    get(`SELECT COUNT(*) AS leads, SUM(CASE WHEN status = 'Avaliação marcada' THEN 1 ELSE 0 END) AS scheduled, SUM(CASE WHEN status = 'Fechado' THEN 1 ELSE 0 END) AS closed FROM marketing_crm_leads`),
+    all(`SELECT c.internal_code, c.cost, COUNT(l.id) AS leads FROM marketing_campaign_links c LEFT JOIN marketing_crm_leads l ON l.campaign_code = c.internal_code OR l.campaign = c.internal_code GROUP BY c.id ORDER BY c.updated_at DESC`),
+  ]);
+  return {
+    by_origin: byOrigin,
+    by_campaign: byCampaign,
+    cost_per_lead: campaignCosts.map((item) => ({ ...item, cost_per_lead: item.leads ? Math.round((item.cost / item.leads) * 100) / 100 : 0 })),
+    scheduled_evaluations: totals.scheduled || 0,
+    closed: totals.closed || 0,
+    total_leads: totals.leads || 0,
+    future_integrations: ['Meta Ads', 'TikTok Ads', 'WhatsApp Business API', 'QR Code de panfleto'],
+  };
+}
+
+router.get('/capture/dashboard', async (req, res, next) => {
+  try { res.json(await captureDashboard()); } catch (error) { next(error); }
+});
+
+router.post('/capture/leads', async (req, res, next) => {
+  try {
+    const campaign = req.body.campaign ? await get('SELECT * FROM marketing_campaign_links WHERE internal_code = ?', [req.body.campaign]) : null;
+    const lead = {
+      name: req.body.name,
+      phone: req.body.phone,
+      phone_whatsapp: req.body.phone,
+      interest: req.body.interest,
+      source: req.body.origin || campaign?.origin || null,
+      campaign: req.body.campaign || null,
+      campaign_code: req.body.campaign || null,
+      status: 'Novo lead',
+      stage: 'Novo lead',
+      notes: req.body.observation || null,
+    };
+    if (!lead.name || !lead.phone || !lead.interest) return res.status(400).json({ error: 'Nome, telefone e interesse são obrigatórios.' });
+    const fields = Object.keys(lead);
+    const result = await run(`INSERT INTO marketing_crm_leads (${fields.join(', ')}) VALUES (${fields.map(() => '?').join(', ')})`, Object.values(lead));
+    await audit(req, 'capture_lead', 'marketing-ai:capture', `Lead ${result.id} em Novo lead`);
+    res.status(201).json(await get('SELECT * FROM marketing_crm_leads WHERE id = ?', [result.id]));
+  } catch (error) { next(error); }
+});
 
 router.get('/crm/dashboard', async (req, res, next) => {
   try { res.json(await commercialDashboard()); } catch (error) { next(error); }

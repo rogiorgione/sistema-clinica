@@ -157,6 +157,32 @@ async function initializeDatabase() {
   await run(`UPDATE marketing_crm_leads SET status = COALESCE(NULLIF(status, ''), NULLIF(stage, ''), 'Novo lead'), stage = COALESCE(NULLIF(stage, ''), NULLIF(status, ''), 'Novo lead')`);
   await run(`UPDATE marketing_crm_leads SET status = 'Novo lead', stage = 'Novo lead' WHERE status = 'Novo Lead' OR stage = 'Novo Lead'`);
   await run(`UPDATE marketing_crm_leads SET status = 'Avaliação marcada', stage = 'Avaliação marcada' WHERE status = 'Avaliação Marcada' OR stage = 'Avaliação Marcada'`);
+
+  await run(`CREATE TABLE IF NOT EXISTS marketing_lead_sources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    active INTEGER NOT NULL DEFAULT 1,
+    notes TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS marketing_campaign_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    internal_code TEXT NOT NULL UNIQUE,
+    origin TEXT NOT NULL,
+    treatment TEXT,
+    responsible TEXT,
+    status TEXT NOT NULL DEFAULT 'Ativa',
+    cost REAL NOT NULL DEFAULT 0,
+    observations TEXT,
+    future_integration TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await addColumnIfMissing('marketing_campaign_links', 'cost', 'REAL NOT NULL DEFAULT 0');
+  await addColumnIfMissing('marketing_campaign_links', 'future_integration', 'TEXT');
+  await addColumnIfMissing('marketing_crm_leads', 'campaign_code', 'TEXT');
+
   await run(`CREATE TABLE IF NOT EXISTS marketing_commercial_agenda (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     lead_name TEXT NOT NULL,
@@ -179,6 +205,7 @@ async function initializeDatabase() {
   )`);
 
   await seedMarketing();
+  await seedLeadCapture();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
@@ -188,6 +215,21 @@ async function addColumnIfMissing(table, column, definition) {
   const columns = await all(`PRAGMA table_info(${table})`);
   if (!columns.some((item) => item.name === column)) {
     await run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+async function seedLeadCapture() {
+  for (const source of ['Instagram', 'TikTok', 'Facebook', 'WhatsApp', 'Indicação', 'Panfleto', 'Google', 'Tráfego pago']) {
+    await run('INSERT OR IGNORE INTO marketing_lead_sources (name, notes) VALUES (?, ?)', [source, 'Fonte padrão de captação BELLEART']);
+  }
+  const campaigns = [
+    ['IG-IMPLANTES', 'Instagram', 'Implantes', 'Marketing', 'Ativa', 0, 'Link para bio e direct do Instagram', 'Meta Ads'],
+    ['TT-ESTETICA', 'TikTok', 'Estética', 'Marketing', 'Ativa', 0, 'Campanha orgânica para vídeos curtos', 'TikTok Ads'],
+    ['WA-AVALIACAO', 'WhatsApp', 'Avaliação', 'Recepção', 'Ativa', 0, 'Entrada manual e futura API oficial', 'WhatsApp Business API'],
+    ['PANFLETO-QR', 'Panfleto', 'Clínica geral', 'Comercial', 'Ativa', 0, 'Estrutura preparada para QR Code impresso', 'QR Code de panfleto'],
+  ];
+  for (const campaign of campaigns) {
+    await run('INSERT OR IGNORE INTO marketing_campaign_links (internal_code, origin, treatment, responsible, status, cost, observations, future_integration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', campaign);
   }
 }
 
