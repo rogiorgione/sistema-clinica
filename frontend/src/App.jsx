@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Financial from './pages/Financial.jsx';
 import Login from './pages/Login.jsx';
 import MarketingAI from './pages/MarketingAI.jsx';
+import ContentCalendar from './pages/ContentCalendar.jsx';
 import ModulePage from './pages/ModulePage.jsx';
 import Patients from './pages/Patients.jsx';
 import { groups } from './modules.js';
@@ -82,6 +83,13 @@ export default function App() {
 
   const PageComponent = fixedPages[activePage];
   const readOnly = user.role === 'leitura' || ['audit', 'users'].includes(activePage);
+  if (activePage === 'content-calendar') {
+    return (
+      <Layout activePage={activePage} onChangePage={setActivePage} user={user} onLogout={handleLogout}>
+        <ContentCalendar readOnly={readOnly} />
+      </Layout>
+    );
+  }
   const page = marketingResources[activePage] ? (
     <MarketingAI resource={marketingResources[activePage]} readOnly={readOnly} />
   ) : PageComponent ? (

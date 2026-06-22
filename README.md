@@ -160,6 +160,36 @@ POST /api/marketing-ai/capture/leads
 
 As rotas genéricas `PUT /api/marketing-ai/:resource/:id` também permitem atualizar fontes e campanhas.
 
+
+## BELLEART Marketing AI - Fase 5
+
+A Fase 5 adiciona o **Calendário Inteligente de Conteúdo** para Instagram, TikTok, Facebook e WhatsApp. O banco continua incremental: as tabelas `content_calendar`, `content_ideas`, `content_categories`, `content_posts` e `content_metrics` são criadas com `CREATE TABLE IF NOT EXISTS`, sem apagar SQLite, pacientes ou registros existentes.
+
+Recursos principais no menu **Marketing & Vendas > Calendário de Conteúdo**:
+
+- **Calendário de Conteúdo:** planejamento por dia, semana e mês, com filtros por categoria, formato e status.
+- **Ideias:** base inicial com 365 ideias de Reels, 365 ideias de Stories e 365 ideias de Carrosséis.
+- **Biblioteca:** posts planejados com gancho, roteiro, legenda, CTA, hashtags, duração, categoria, plataforma e status.
+- **Stories:** visão dedicada às ideias de Stories.
+- **Métricas:** resumo de posts planejados, publicados, Reels, Stories, Carrosséis e conteúdos por categoria.
+- **Categorias editoriais:** Implantes, Prótese Protocolo, Ortodontia, Botox, Preenchimento, Harmonização Facial, Clareamento, Próteses, Limpeza, Bastidores, Autoridade e Depoimentos.
+- **Temas prontos:** Bastidores, antes e depois seguindo normas éticas, perguntas frequentes, promoções, autoridade e depoimentos.
+- **Integrações futuras:** estrutura preparada para Instagram Graph API, TikTok Business API, Facebook Graph API e Metricool API.
+
+Rotas específicas da API autenticada para a Fase 5:
+
+```text
+GET  /api/content/calendar
+GET  /api/content/ideas
+GET  /api/content/posts
+POST /api/content/posts
+PUT  /api/content/posts/:id
+GET  /api/content/stories
+GET  /api/content/dashboard
+```
+
+Filtros aceitos nas rotas de listagem: `day`, `week`, `month`, `category`, `format` e `status`.
+
 ## Módulos e permissões
 
 - **Visão Geral:** Dashboard, Painel Executivo e Notificações.
