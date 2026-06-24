@@ -529,3 +529,74 @@ GET/POST /api/reports/templates
 GET/POST /api/backup/jobs
 GET/POST /api/saas/plans
 ```
+
+## Módulos Enterprise adicionados
+
+Esta versão evolui o BELLEART OS com módulos enterprise aditivos, preservando o SQLite e todos os cadastros já existentes. A inicialização usa `CREATE TABLE IF NOT EXISTS`, `INSERT OR IGNORE` e rotas autenticadas com auditoria nas alterações de dados.
+
+### Central Clínica Enterprise
+
+Menu **Clínica > Central Clínica** com abas para resumo, ficha clínica, odontograma, evolução, anamnese, plano de tratamento, fotos, anexos, receitas, atestados, termos e histórico de procedimentos.
+
+Rotas autenticadas principais:
+
+```text
+/api/clinical/records
+/api/clinical/odontogram
+/api/clinical/evolutions
+/api/clinical/anamnesis
+/api/clinical/treatment-plans
+/api/clinical/photos
+/api/clinical/attachments
+/api/clinical/prescriptions
+/api/clinical/certificates
+/api/clinical/consent-terms
+/api/clinical/history
+/api/clinical/dashboard
+```
+
+### CRM Kanban Enterprise
+
+Menu **Marketing & Vendas > CRM Kanban Enterprise** com pipeline profissional: Novo Lead, Primeiro contato, Avaliação agendada, Avaliação realizada, Orçamento entregue, Negociação, Fechado e Perdido.
+
+Rotas principais:
+
+```text
+/api/enterprise-crm/leads
+/api/enterprise-crm/stages
+/api/enterprise-crm/history
+/api/enterprise-crm/tasks
+/api/enterprise-crm/scores
+/api/enterprise-crm/sources
+/api/enterprise-crm/campaigns
+/api/enterprise-crm/dashboard
+```
+
+### Secretária Virtual IA
+
+Menu **Marketing & Vendas > Secretária Virtual IA** para prioridades do dia, alertas, sugestões, ligações, tarefas e follow-ups. As sugestões são preparadas localmente e não conectam serviços externos sem autorização.
+
+### BELLEART AI
+
+Menu **Marketing & Vendas > BELLEART AI** com agentes Marketing, Comercial, Financeiro e Executivo. A estrutura prepara geração de conteúdo, relatórios, recomendações e biblioteca de prompts. Integrações externas devem usar somente OAuth/API oficial, sem tokens reais no frontend e sem armazenar senhas de redes sociais.
+
+### Automações Inteligentes
+
+Menu **Gestão > Automações Inteligentes** com regras, gatilhos, condições, ações, fila e logs. Exemplos preparados: lead novo cria tarefa, orçamento entregue agenda follow-up, falta gera reagendamento e parcela atrasada gera notificação.
+
+### Backup e Segurança
+
+Menu **Administração > Backup e Segurança** com jobs de backup, arquivos, logs, saúde do sistema, eventos de segurança e eventos de auditoria. A restauração real fica preparada para implementação futura segura, sem apagar dados existentes.
+
+### PWA / Mobile Ready
+
+O frontend possui `manifest.webmanifest`, ícone SVG e service worker básico para shell da aplicação. O layout recebeu ajustes responsivos para celular/tablet e continua sendo uma aplicação web, sem app nativo.
+
+## Verificações recomendadas
+
+```bash
+npm run build --prefix frontend
+npm test --prefix backend
+find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
+node -e "require('./backend/src/database/schema')().then(()=>console.log('schema ok')).catch(e=>{console.error(e); process.exit(1)})"
+```

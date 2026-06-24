@@ -14,6 +14,7 @@ import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import CommercialCenter from './pages/CommercialCenter.jsx';
 import TrafficCenter from './pages/TrafficCenter.jsx';
+import EnterpriseModule from './pages/EnterpriseModule.jsx';
 import OperationalModulePage from './pages/OperationalModulePage.jsx';
 import Patients from './pages/Patients.jsx';
 import PremiumOS from './pages/PremiumOS.jsx';
@@ -92,6 +93,7 @@ export default function App() {
   }
 
   const PageComponent = fixedPages[activePage];
+  const enterprisePages = { clinical: 'clinical', enterpriseCrm: 'enterpriseCrm', secretary: 'secretary', belleartAi: 'belleartAi', automationsEnterprise: 'automations', backupSecurity: 'backupSecurity' };
   const readOnly = user.role === 'leitura' || activePage === 'audit';
   if (activePage === 'ai-assistant') {
     return (
@@ -109,7 +111,9 @@ export default function App() {
   }
   const trafficPages = ['trafficCenter', 'trafficCampaigns', 'trafficPlatforms', 'trafficLeads', 'trafficMetrics', 'trafficRoi', 'socialIntegrations', 'apiSettings'];
   const commercialPages = ['commercial', 'pipeline', 'leads', 'followup', 'objections', 'crmCampaigns', 'commercialReports', 'commercialDashboard'];
-  const page = trafficPages.includes(activePage) ? (
+  const page = enterprisePages[activePage] ? (
+    <EnterpriseModule type={enterprisePages[activePage]} readOnly={readOnly} />
+  ) : trafficPages.includes(activePage) ? (
     <TrafficCenter page={activePage} readOnly={readOnly} />
   ) : commercialPages.includes(activePage) ? (
     <CommercialCenter page={activePage} readOnly={readOnly} />

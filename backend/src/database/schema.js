@@ -516,6 +516,7 @@ async function initializeDatabase() {
 
   await initializeTrafficAndSocial();
   await initializeEnterpriseSaas();
+  await initializeEnterpriseDayModules();
 
   const administrator = await get('SELECT id FROM users WHERE email = ?', ['admin@belleart.local']);
   if (!administrator) await run('INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)', ['Administrador BELLEART', 'admin@belleart.local', hashPassword(process.env.ADMIN_PASSWORD || 'admin123'), 'administrador']);
@@ -563,6 +564,41 @@ async function initializeEnterpriseSaas() {
   await run('INSERT OR IGNORE INTO saas_plans (title, status, payload) VALUES (?, ?, ?)', ['BELLEART Enterprise Local', 'Preparado', JSON.stringify({ local_sqlite: true, future_subscription: true })]);
   await run('INSERT OR IGNORE INTO whatsapp_business_settings (title, status, payload) VALUES (?, ?, ?)', ['WhatsApp Business API Oficial', 'Não conectado', JSON.stringify({ provider: 'Meta Cloud API', stores_passwords: false, requires_authorization: true, token_storage: 'secure_reference_only' })]);
   await run('INSERT OR IGNORE INTO google_calendar_links (title, status, payload) VALUES (?, ?, ?)', ['Google Calendar OAuth', 'Não conectado', JSON.stringify({ oauth: true, stores_passwords: false, official_api: true })]);
+}
+
+
+async function initializeEnterpriseDayModules() {
+  const tables = [
+    'clinical_records','clinical_odontogram','clinical_evolutions','clinical_anamnesis','clinical_treatment_plans','clinical_photos','clinical_attachments','clinical_prescriptions','clinical_certificates','clinical_consent_terms','clinical_procedure_history',
+    'enterprise_leads','enterprise_pipeline_stages','enterprise_lead_history','enterprise_lead_tasks','enterprise_lead_scores','enterprise_lead_sources','enterprise_lead_campaigns',
+    'virtual_secretary_tasks','virtual_secretary_alerts','virtual_secretary_suggestions','virtual_secretary_priorities','virtual_secretary_call_queue','virtual_secretary_followups',
+    'ai_agents','ai_agent_tasks','ai_agent_outputs','ai_recommendations','ai_lead_scores','ai_content_generations','ai_report_generations','ai_prompt_library',
+    'automation_rules','automation_triggers','automation_actions','automation_logs','automation_queue','automation_conditions',
+    'backup_jobs','backup_files','backup_logs','system_health','security_events','audit_events'
+  ];
+  for (const table of tables) {
+    await run(`CREATE TABLE IF NOT EXISTS ${table} (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Preparado', payload TEXT NOT NULL DEFAULT '{}', created_by INTEGER, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL)`);
+  }
+  for (const [index, stage] of ['Novo Lead','Primeiro contato','Avaliação agendada','Avaliação realizada','Orçamento entregue','Negociação','Fechado','Perdido'].entries()) {
+    await run('INSERT OR IGNORE INTO enterprise_pipeline_stages (title, status, payload) VALUES (?, ?, ?)', [stage, 'Ativa', JSON.stringify({ position: index + 1, kanban: true })]);
+  }
+  const agents = [
+    ['Agente Marketing', 'Ativo', { gera: ['Reels','Stories','Carrosséis','Legendas','Anúncios'], official_apis_only: true }],
+    ['Agente Comercial', 'Ativo', { foco: ['objeções','follow-ups','classificação de leads','ligações'] }],
+    ['Agente Financeiro', 'Ativo', { foco: ['fluxo de caixa','metas','previsão','inadimplência'] }],
+    ['Agente Executivo', 'Ativo', { foco: ['resumo do dia','indicadores','prioridades','riscos'] }],
+  ];
+  for (const [title, status, payload] of agents) await run('INSERT OR IGNORE INTO ai_agents (title, status, payload) VALUES (?, ?, ?)', [title, status, JSON.stringify(payload)]);
+  const automations = [
+    ['Lead novo → criar tarefa', 'Ativa', { trigger: 'lead_created', action: 'create_task' }],
+    ['Orçamento entregue → follow-up em 1 dia', 'Ativa', { trigger: 'budget_delivered', action: 'schedule_followup', delay_days: 1 }],
+    ['Paciente faltou → reagendar', 'Ativa', { trigger: 'appointment_missed', action: 'reschedule' }],
+    ['Parcela atrasou → notificação', 'Ativa', { trigger: 'installment_overdue', action: 'notify' }],
+  ];
+  for (const [title, status, payload] of automations) await run('INSERT OR IGNORE INTO automation_rules (title, status, payload) VALUES (?, ?, ?)', [title, status, JSON.stringify(payload)]);
+  await run('INSERT OR IGNORE INTO system_health (title, status, payload) VALUES (?, ?, ?)', ['Status geral BELLEART OS', 'Estável', JSON.stringify({ sqlite_preserved: true, pwa_ready: true })]);
+  await run('INSERT OR IGNORE INTO backup_jobs (title, status, payload) VALUES (?, ?, ?)', ['Backup manual SQLite', 'Preparado', JSON.stringify({ type: 'sqlite_export', destructive: false })]);
+  await run('INSERT OR IGNORE INTO security_events (title, status, payload) VALUES (?, ?, ?)', ['Política de integrações oficiais', 'Ativa', JSON.stringify({ stores_social_passwords: false, oauth_only: true, no_frontend_tokens: true })]);
 }
 
 async function addColumnIfMissing(table, column, definition) {
