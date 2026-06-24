@@ -37,6 +37,26 @@ router.get('/summary', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.get('/dashboard', async (req, res, next) => {
+  try {
+    const [patients, appointments, leads, finance, backups] = await Promise.all([
+      get('SELECT COUNT(*) AS total FROM patients'),
+      get('SELECT COUNT(*) AS total FROM appointments'),
+      get('SELECT COUNT(*) AS total FROM crm_contacts'),
+      get("SELECT COALESCE(SUM(CASE WHEN type = 'receita' THEN amount ELSE -amount END), 0) AS balance FROM financial_records WHERE status != 'cancelado'"),
+      all('SELECT * FROM enterprise_backups ORDER BY created_at DESC LIMIT 5'),
+    ]);
+    res.json({
+      generated_at: new Date().toISOString(),
+      patients: patients.total || 0,
+      appointments: appointments.total || 0,
+      leads: leads.total || 0,
+      financialBalance: Number(finance.balance || 0),
+      backups,
+    });
+  } catch (error) { next(error); }
+});
+
 router.put('/crm/leads/:id/stage', async (req, res, next) => {
   try {
     const stage = req.body.stage;

@@ -32,6 +32,12 @@ router.get('/summary', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+router.get('/agents', async (req, res, next) => {
+  try {
+    res.json(await all('SELECT * FROM ai_agents ORDER BY updated_at DESC, id DESC LIMIT 200'));
+  } catch (error) { next(error); }
+});
+
 router.get('/:resource', async (req, res, next) => {
   try {
     const config = resources[req.params.resource];

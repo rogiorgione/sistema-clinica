@@ -41,7 +41,7 @@ export default function ModulePage({ title, path, readOnly = false }) {
       {!readOnly && (
         <form className="search-card inline-form" onSubmit={submit}>
           <label>
-            Novo registro
+            Novo item operacional
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
@@ -61,7 +61,7 @@ export default function ModulePage({ title, path, readOnly = false }) {
             <small>{new Date(item.updated_at).toLocaleString('pt-BR')}</small>
           </article>
         )) : (
-          <article className="card empty-state">Nenhum registro. O módulo está pronto para uso.</article>
+          <article className="card empty-state">Sem dados cadastrados para esta visão. Adicione o primeiro item para começar.</article>
         )}
       </div>
     </section>
