@@ -600,3 +600,48 @@ npm test --prefix backend
 find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
 node -e "require('./backend/src/database/schema')().then(()=>console.log('schema ok')).catch(e=>{console.error(e); process.exit(1)})"
 ```
+
+## Validação automática completa
+
+Para validar o BELLEART OS sem depender de testes manuais, execute os comandos abaixo na raiz do projeto:
+
+```bash
+npm run build --prefix frontend
+npm test --prefix backend
+find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check
+node -e "require('./backend/src/database/schema')().then(()=>console.log('schema ok')).catch(e=>{console.error(e); process.exit(1)})"
+node backend/scripts/validate-system.js
+node frontend/scripts/validate-routes.js
+```
+
+### O que a validação confere
+
+- O SQLite é inicializado de forma incremental, sem apagar dados existentes.
+- O login local do administrador é feito automaticamente com `admin@belleart.local` e `ADMIN_PASSWORD` ou `admin123`.
+- As principais rotas da API são chamadas com `Authorization: Bearer`.
+- A validação falha se alguma rota retornar erro 500, HTML indevido ou status inesperado.
+- O frontend é conferido estaticamente para detectar rotas duplicadas, imports ausentes, módulos declarados e uso controlado do fallback operacional.
+
+### Como interpretar o QA_REPORT.md
+
+O arquivo `QA_REPORT.md` registra a data da validação, módulos conferidos, rotas testadas, correções aplicadas, módulos ainda atendidos pelo fallback operacional, resultado dos testes e próximos passos recomendados.
+
+### Fluxo padrão com Codex
+
+1. Solicite a alteração desejada de forma objetiva.
+2. O Codex deve aplicar mudanças seguras e aditivas, preservando `backend/data/clinic.db` e dados existentes.
+3. Antes de finalizar, rode build, testes, checagem de sintaxe, schema e scripts de validação.
+4. Atualize `QA_REPORT.md` quando a mudança impactar rotas, módulos, APIs ou documentação operacional.
+5. Faça commit e abra PR com resumo claro do que foi alterado.
+
+### Comandos úteis
+
+```bash
+npm install --prefix backend
+npm install --prefix frontend
+npm start --prefix backend
+npm run dev --prefix frontend
+node backend/scripts/validate-system.js
+node frontend/scripts/validate-routes.js
+```
+

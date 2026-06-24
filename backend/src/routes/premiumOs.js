@@ -10,6 +10,25 @@ const addDays = (days) => { const date = new Date(); date.setDate(date.getDate()
 const money = (value) => Number(value || 0);
 const percent = (part, total) => (money(total) ? Number(((money(part) / money(total)) * 100).toFixed(2)) : 0);
 
+router.get('/dashboard', async (req, res, next) => {
+  try {
+    const [rules, goals, documents, leads] = await Promise.all([
+      get('SELECT COUNT(*) AS total FROM marketing_automation_rules'),
+      get('SELECT COUNT(*) AS total, COALESCE(SUM(target_amount), 0) AS target FROM financial_goals'),
+      get('SELECT COUNT(*) AS total FROM document_center'),
+      get('SELECT COUNT(*) AS total FROM crm_contacts'),
+    ]);
+    res.json({
+      generatedAt: new Date().toISOString(),
+      automations: rules.total || 0,
+      financialGoals: { total: goals.total || 0, target: money(goals.target) },
+      documents: documents.total || 0,
+      crmLeads: leads.total || 0,
+      status: 'operational',
+    });
+  } catch (error) { next(error); }
+});
+
 function leadScore(lead) {
   let score = 30;
   if (['Avaliação marcada', 'Proposta enviada', 'Negociação'].includes(lead.status || lead.pipeline_stage)) score += 25;
