@@ -2,9 +2,29 @@ const express = require('express');
 const cors = require('cors');
 const { authenticate, authorize, audit } = require('./auth');
 const createModuleRouter = require('./routes/modules');
+const { get } = require('./database/connection');
 const app = express();
 app.use(cors()); app.use(express.json());
-app.get('/api/health', (req, res) => res.json({ status: 'ok', product: 'BELLEART OS' }));
+app.get('/api/health', async (req, res, next) => {
+  try {
+    const latestStartupCheck = await get(
+      "SELECT status, payload, created_at FROM system_health WHERE title = ? ORDER BY id DESC LIMIT 1",
+      ['Verificação automática de inicialização']
+    );
+
+    res.json({
+      status: latestStartupCheck?.status || 'ok',
+      product: 'BELLEART IA',
+      startupCheck: latestStartupCheck ? {
+        status: latestStartupCheck.status,
+        createdAt: latestStartupCheck.created_at,
+        details: JSON.parse(latestStartupCheck.payload || '{}'),
+      } : null,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', authenticate);
 app.use((req, res, next) => { if (req.method === 'GET') return next(); res.on('finish', () => { if (res.statusCode < 400) audit(req, req.method.toLowerCase(), req.path.split('/')[1] || 'api').catch(console.error); }); next(); });
