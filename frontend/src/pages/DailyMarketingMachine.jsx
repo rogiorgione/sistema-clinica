@@ -5,8 +5,8 @@ const pageConfig = {
   marketingGoals: { title: 'Meta de Orçamentos', endpoint: '/marketing-goals', listKey: 'goals' },
   flyers: { title: 'Panfletagem Rastreável', endpoint: '/flyers/campaigns' },
   quickLead: { title: 'Entrada Rápida de Lead', endpoint: '/lead-capture' },
-  commercialRoutine: { title: 'Rotina Comercial do Dia', endpoint: '/commercial-routine/today' },
-  marketingDaily: { title: 'Painel de Marketing Diário', endpoint: '/marketing-daily/dashboard' },
+  commercialRoutine: { title: 'Central SDR', endpoint: '/commercial-routine/today' },
+  marketingDaily: { title: 'Painel Diário', endpoint: '/marketing-daily/dashboard' },
   weeklyReport: { title: 'Relatório Semanal', endpoint: '/marketing-weekly/reports' },
   originPerformance: { title: 'Desempenho por Origem', endpoint: '/marketing-origin/performance' },
 };
@@ -23,7 +23,7 @@ function asArray(data, listKey) {
 
 export default function DailyMarketingMachine({ page, readOnly }) {
   const effectivePage = page === 'commercialRoutine' ? 'sdr' : page;
-  const config = effectivePage === 'sdr' ? { title: 'Central da SDR / Secretária Comercial', endpoint: '/sdr/dashboard' } : (pageConfig[page] || pageConfig.marketingDaily);
+  const config = effectivePage === 'sdr' ? { title: 'Central SDR', endpoint: '/sdr/dashboard' } : (pageConfig[page] || pageConfig.marketingDaily);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);

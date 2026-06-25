@@ -8,7 +8,7 @@
 
 ## Resumo executivo
 
-Foi executada uma rodada completa de QA automático após a revisão da máquina diária de marketing, captação rastreável e central da SDR/Secretária Comercial. O ciclo confirmou build do frontend, testes do backend, validação autenticada das APIs e validação estática de rotas do frontend.
+Foi executada uma rodada completa de QA automático após a revisão da máquina diária de marketing, captação rastreável e central da SDR/Secretária Comercial. O ciclo confirmou build do frontend, testes do backend, validação autenticada das APIs e validação estática de rotas do frontend. Nesta rodada, o menu também foi ajustado para exibir claramente o grupo **MÁQUINA DE MARKETING** com todos os módulos da sprint.
 
 A implementação foi feita de forma segura e aditiva: o SQLite foi preservado, pacientes foram preservados e os dados existentes de agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações não foram apagados nem recriados.
 
@@ -23,6 +23,7 @@ A implementação foi feita de forma segura e aditiva: o SQLite foi preservado, 
 - Rankings de origem e campanha com leads e orçamentos.
 - Mensagens de WhatsApp de conversão para implante, ortodontia, prótese e panfletagem.
 - Checklist diário de conteúdo com 1 Reel, 3 Stories, comentários/directs, registro de leads e follow-ups.
+- Grupo **MÁQUINA DE MARKETING** visível no menu com Meta de Orçamentos, Panfletagem, Entrada Rápida de Lead, Central SDR, Painel Diário, Relatório Semanal e Desempenho por Origem.
 - Painel diário de marketing, relatório semanal automático, desempenho por origem e alertas comerciais.
 - Rotas REST para metas, panfletos, lead capture, rotina SDR, dashboard diário, relatórios, performance e alertas.
 
@@ -59,7 +60,7 @@ O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dado
 
 ## Validação frontend
 
-O script `frontend/scripts/validate-routes.js` confirmou módulos declarados, imports de páginas, páginas React existentes, ausência de duplicidades, fallback operacional controlado e matriz básica de permissões.
+O script `frontend/scripts/validate-routes.js` confirmou módulos declarados, imports de páginas, páginas React existentes, ausência de duplicidades, fallback operacional controlado e matriz básica de permissões. A validação estática agora reconhece os módulos da máquina de marketing como atendidos pela página especializada `DailyMarketingMachine.jsx`.
 
 ## Garantias da sprint
 
