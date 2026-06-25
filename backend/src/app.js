@@ -13,6 +13,7 @@ const legacy = [
   ['/appointments', 'appointments', './routes/appointments'], ['/budgets', 'budgets', './routes/budgets'],
   ['/financial', 'financial', './routes/financial'],
 ];
+app.use('/api', authorize('marketing'), require('./routes/dailyMarketing'));
 legacy.forEach(([path, permission, route]) => app.use(`/api${path}`, authorize(permission), require(route)));
 const modules = {
   marketing: 'marketing', 'lead-capture': 'marketing', campaigns: 'campaigns', crm: 'crm', 'implant-crm': 'implants',

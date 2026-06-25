@@ -13,6 +13,7 @@ import MarketingAI from './pages/MarketingAI.jsx';
 import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import CommercialCenter from './pages/CommercialCenter.jsx';
+import DailyMarketingMachine from './pages/DailyMarketingMachine.jsx';
 import TrafficCenter from './pages/TrafficCenter.jsx';
 import EnterpriseModule from './pages/EnterpriseModule.jsx';
 import OperationalModulePage from './pages/OperationalModulePage.jsx';
@@ -32,6 +33,7 @@ const marketingResources = {
   tasks: 'agenda',
   whatsapp: 'whatsapp',
 };
+const dailyMarketingPages = ['marketingGoals','flyers','quickLead','commercialRoutine','marketingDaily','weeklyReport','originPerformance'];
 const pageLabels = Object.fromEntries(groups.flatMap((group) => group.items));
 const fixedPages = {
   appointments: Appointments,
@@ -117,6 +119,8 @@ export default function App() {
     <TrafficCenter page={activePage} readOnly={readOnly} />
   ) : commercialPages.includes(activePage) ? (
     <CommercialCenter page={activePage} readOnly={readOnly} />
+  ) : dailyMarketingPages.includes(activePage) ? (
+    <DailyMarketingMachine page={activePage} readOnly={readOnly} />
   ) : marketingResources[activePage] ? (
     <MarketingAI resource={marketingResources[activePage]} readOnly={readOnly} />
   ) : PageComponent ? (
