@@ -761,3 +761,28 @@ GET  /api/marketing-origin/performance
 ```
 
 As alterações permanecem aditivas e seguras para operação local-first: não apagam SQLite, não apagam pacientes, não removem dados existentes, mantêm `CREATE TABLE IF NOT EXISTS` nas estruturas da máquina diária e usam seeds com `INSERT OR IGNORE`.
+
+## BELLEART IA 1.0 — Roadmap Missões 009 a 030
+
+A tela inicial autenticada agora é **BELLEART IA**, uma central única que substitui o Dashboard tradicional para a rotina diária. Ela consolida CRM, agenda, marketing, conteúdo, WhatsApp, financeiro, KPIs, aprendizado e recomendações do Brain.
+
+Principais capacidades implementadas nesta base:
+
+- **IA de Objeções:** classifica objeções de preço, medo, tempo, confiança ou indecisão; gera resposta personalizada; sugere próxima ação; estima chance de conversão; grava memória para aprendizado.
+- **WhatsApp Inteligente e CRM:** usa templates, follow-ups, leads e tarefas comerciais já existentes como fonte para recomendações do Brain.
+- **Calendário e Planejamento de Conteúdo:** exibe próximos conteúdos e apoia planejamento diário, semanal, mensal e sazonal.
+- **Biblioteca Inteligente:** nova rota de biblioteca pesquisável combina conteúdos de IA e mensagens de WhatsApp com filtros por busca e categoria.
+- **IA Financeira e KPIs:** calcula receita, receita perdida, ROI, ticket médio, previsão mensal/anual, leads, conversão, pacientes novos, agenda futura e follow-ups pendentes.
+- **Brain Analytics:** cada plano diário mostra decisão tomada, confiança, dados usados e impacto esperado.
+- **Brain Learning 2.0 e Memória:** a tabela `brain_memory` registra aprendizados, objeções, decisões e evidências para melhorar ciclos futuros.
+- **Configuração Inteligente e Onboarding:** a tabela `clinic_settings` mantém configurações por clínica sem alterar código, preparando a evolução multiclínicas.
+
+Rotas principais autenticadas:
+
+```text
+GET  /api/brain/workspace
+POST /api/brain/objections/analyze
+GET  /api/brain/library
+```
+
+A implementação é incremental e preserva compatibilidade com os módulos atuais. Os módulos antigos seguem disponíveis, mas devem alimentar o Brain e não serem o ponto principal de trabalho diário.

@@ -52,6 +52,7 @@ app.use('/api/api-credentials', authorize('marketing'), require('./routes/apiCre
 app.use('/api/crm', authorize('crm'), require('./routes/crm'));
 app.use('/api', authorize('executive'), require('./routes/enterpriseModules'));
 app.use('/api/ai', authorize('ai-assistant'), require('./routes/ai'));
+app.use('/api/brain', authorize('dashboard'), require('./routes/brain'));
 app.use('/api/content', authorize('content-calendar'), require('./routes/content'));
 app.use('/api/premium-os', authorize('executive'), require('./routes/premiumOs'));
 app.use('/api/enterprise', authorize('executive'), require('./routes/enterprise'));

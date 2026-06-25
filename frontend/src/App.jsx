@@ -11,6 +11,7 @@ import Financial from './pages/Financial.jsx';
 import Login from './pages/Login.jsx';
 import MarketingAI from './pages/MarketingAI.jsx';
 import MarketingEmployeeDashboard from './pages/MarketingEmployeeDashboard.jsx';
+import BelleartBrain from './pages/BelleartBrain.jsx';
 import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import CommercialCenter from './pages/CommercialCenter.jsx';
@@ -36,7 +37,7 @@ const marketingResources = {
 };
 const dailyMarketingPages = ['marketingGoals','flyers','quickLead','commercialRoutine','marketingDaily','weeklyReport','originPerformance'];
 const pageLabels = Object.fromEntries(groups.flatMap((group) => group.items));
-const HOME_PAGE = 'marketingEmployee';
+const HOME_PAGE = 'belleartBrain';
 const LEGACY_ACTIVE_PAGE_KEYS = ['belleart_active_page', 'belleart_activePage', 'activePage'];
 
 function clearLegacyActivePage() {
@@ -46,6 +47,7 @@ function clearLegacyActivePage() {
 const fixedPages = {
   appointments: Appointments,
   budgets: Budgets,
+  belleartBrain: BelleartBrain,
   marketingEmployee: MarketingEmployeeDashboard,
   dashboard: Dashboard,
   executive: ExecutivePanel,

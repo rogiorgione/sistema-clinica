@@ -430,6 +430,29 @@ async function initializeDatabase() {
   await seedLeadCapture();
   await seedAiAssistant();
 
+  await run(`CREATE TABLE IF NOT EXISTS brain_memory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clinic_id INTEGER NOT NULL DEFAULT 1,
+    memory_type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    summary TEXT,
+    payload TEXT NOT NULL DEFAULT '{}',
+    confidence REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+  await run(`CREATE TABLE IF NOT EXISTS clinic_settings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clinic_id INTEGER NOT NULL DEFAULT 1,
+    setting_key TEXT NOT NULL,
+    setting_value TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(clinic_id, setting_key)
+  )`);
+  await run('INSERT OR IGNORE INTO clinic_settings (clinic_id, setting_key, setting_value) VALUES (?, ?, ?)', [1, 'brain_onboarding', JSON.stringify({ clinic: 'BELLEART Clínica Matriz', configured: true, modules: ['marketing','crm','financeiro','agenda'] })]);
+
+
 
 
   await run(`CREATE TABLE IF NOT EXISTS appointment_waitlist (
