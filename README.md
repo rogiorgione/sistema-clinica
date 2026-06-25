@@ -699,3 +699,19 @@ GET      /api/marketing-alerts
 - As novas tabelas são criadas com `CREATE TABLE IF NOT EXISTS`.
 - Seeds e dados padrão usam `INSERT OR IGNORE`.
 - Nenhuma senha de redes sociais é armazenada; integrações externas permanecem preparadas para OAuth/API oficial.
+
+### Sprint marketing captação SDR
+
+A sprint `sprint-marketing-captacao-sdr` reforça a máquina diária de marketing para a meta de **15 orçamentos/mês** com uma central operacional da SDR/Secretária Comercial. A tela de Rotina Comercial do Dia agora usa a central SDR para listar contatos do dia, mostrar follow-ups atrasados, abrir WhatsApp com mensagem sugerida e registrar os avanços do lead: contatado, avaliação agendada, orçamento enviado, fechado ou perdido.
+
+Rotas adicionadas/revisadas:
+
+```txt
+GET  /api/sdr/dashboard
+POST /api/sdr/leads/:id/status
+GET  /api/marketing-weekly/reports
+POST /api/marketing-weekly/reports/generate
+GET  /api/marketing-origin/performance
+```
+
+As alterações permanecem aditivas e seguras para operação local-first: não apagam SQLite, não apagam pacientes, não removem dados existentes, mantêm `CREATE TABLE IF NOT EXISTS` nas estruturas da máquina diária e usam seeds com `INSERT OR IGNORE`.

@@ -15,12 +15,15 @@ function asArray(data, listKey) {
   if (Array.isArray(data)) return data;
   if (listKey && Array.isArray(data?.[listKey])) return data[listKey];
   if (Array.isArray(data?.checklist)) return data.checklist;
+  if (Array.isArray(data?.calls_today)) return data.calls_today;
   if (Array.isArray(data?.whatsapp_today)) return data.whatsapp_today;
+  if (Array.isArray(data?.reports)) return data.reports;
   return [];
 }
 
 export default function DailyMarketingMachine({ page, readOnly }) {
-  const config = pageConfig[page] || pageConfig.marketingDaily;
+  const effectivePage = page === 'commercialRoutine' ? 'sdr' : page;
+  const config = effectivePage === 'sdr' ? { title: 'Central da SDR / Secretária Comercial', endpoint: '/sdr/dashboard' } : (pageConfig[page] || pageConfig.marketingDaily);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
@@ -33,6 +36,22 @@ export default function DailyMarketingMachine({ page, readOnly }) {
   }
 
   useEffect(() => { load(); }, [page]);
+
+  async function markLead(leadId, action) {
+    if (readOnly) return;
+    try {
+      await api.post(`/sdr/leads/${leadId}/status`, { action });
+      await load();
+    } catch (err) { setError(err.message); }
+  }
+
+  async function generateWeeklyReport() {
+    if (readOnly) return;
+    try {
+      await api.post('/marketing-weekly/reports/generate', {});
+      await load();
+    } catch (err) { setError(err.message); }
+  }
 
   async function submitLead(event) {
     event.preventDefault();
@@ -59,6 +78,8 @@ export default function DailyMarketingMachine({ page, readOnly }) {
       {loading && <p className="empty-state">Carregando dados de marketing...</p>}
       {error && <p className="error-state">Não foi possível carregar: {error}</p>}
       <div className="kpi-grid">{cards.map(([label, value]) => <article className="kpi-card" key={label}><span>{label}</span><strong>{value}</strong></article>)}</div>
+      {effectivePage === 'sdr' && data?.overdue_followups?.length > 0 && <p className="error-state">Atenção: {data.overdue_followups.length} follow-up(s) atrasado(s). Priorize estes contatos hoje.</p>}
+      {page === 'weeklyReport' && <div className="form-actions"><button type="button" onClick={generateWeeklyReport} disabled={readOnly}>Gerar relatório semanal automático</button></div>}
       {page === 'quickLead' && (
         <form className="form-grid" onSubmit={submitLead}>
           <input placeholder="Nome" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
@@ -70,12 +91,18 @@ export default function DailyMarketingMachine({ page, readOnly }) {
           <button disabled={readOnly}>Cadastrar lead e criar follow-up</button>
         </form>
       )}
+      {effectivePage === 'sdr' && (
+        <div className="capture-grid">
+          <article className="card"><h3>Ranking de origem</h3>{data?.origin_ranking?.map((item) => <p key={item.label}><b>{item.label}:</b> {item.leads} leads / {item.budgets || 0} orçamentos</p>)}</article>
+          <article className="card"><h3>Ranking de campanha</h3>{data?.campaign_ranking?.map((item) => <p key={item.label}><b>{item.label}:</b> {item.leads} leads / {item.budgets || 0} orçamentos</p>)}</article>
+        </div>
+      )}
       <div className="table-card">
         <h2>Registros</h2>
         {!rows.length ? <p className="empty-state">Nenhum registro encontrado. Use os formulários para iniciar a rotina.</p> : (
           <table><thead><tr>{Object.keys(rows[0]).slice(0, 6).map((key) => <th key={key}>{key}</th>)}<th>Ações</th></tr></thead><tbody>{rows.map((row) => <tr key={`${row.id}-${row.title || row.name || row.item}`}>
             {Object.keys(rows[0]).slice(0, 6).map((key) => <td key={key}>{String(row[key] ?? '')}</td>)}
-            <td>{row.phone_whatsapp ? <a className="button-link" href={`https://wa.me/55${String(row.phone_whatsapp).replace(/\D/g, '')}`} target="_blank" rel="noreferrer">Abrir WhatsApp</a> : <button>Copiar mensagem</button>}</td>
+            <td><div className="form-actions">{row.phone_whatsapp ? <a className="button-link" href={`https://wa.me/55${String(row.phone_whatsapp).replace(/\D/g, '')}?text=${encodeURIComponent(row.suggested_whatsapp_message || 'Olá! Podemos falar sobre sua avaliação na BELLEART?')}`} target="_blank" rel="noreferrer">Abrir WhatsApp</a> : <button type="button">Copiar mensagem</button>}{effectivePage === 'sdr' && ['contacted','scheduled','budget_sent','closed','lost'].map((action) => <button key={action} type="button" onClick={() => markLead(row.id, action)} disabled={readOnly}>{({ contacted: 'Contatado', scheduled: 'Avaliação', budget_sent: 'Orçamento', closed: 'Fechado', lost: 'Perdido' })[action]}</button>)}</div></td>
           </tr>)}</tbody></table>
         )}
       </div>
