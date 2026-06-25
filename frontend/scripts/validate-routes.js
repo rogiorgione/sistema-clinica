@@ -20,6 +20,7 @@ for (const key of ['ai-assistant','content-calendar']) coveredBySpecialist.add(k
 for (const key of ['trafficCenter','trafficCampaigns','trafficPlatforms','trafficLeads','trafficMetrics','trafficRoi','socialIntegrations','apiSettings']) coveredBySpecialist.add(key);
 for (const key of ['commercial','pipeline','leads','followup','objections','crmCampaigns','commercialReports','commercialDashboard']) coveredBySpecialist.add(key);
 for (const key of ['marketing','lead-capture','campaigns','crm','whatsapp','tasks','captions','reels','stories','metrics']) coveredBySpecialist.add(key);
+for (const key of ['marketingGoals','flyers','quickLead','commercialRoutine','marketingDaily','weeklyReport','originPerformance']) coveredBySpecialist.add(key);
 for (const key of ['clinical','enterpriseCrm','secretary','belleartAi','automationsEnterprise','backupSecurity']) coveredBySpecialist.add(key);
 const operationalModules = moduleKeys.filter((key) => !coveredBySpecialist.has(key));
 const roles = ['administrador','dentista','recepcao','financeiro','marketing','leitura'];
