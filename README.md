@@ -61,6 +61,28 @@ Endereços locais:
 - API: `http://localhost:3001/api`
 - Saúde da API: `http://localhost:3001/api/health`
 
+
+## Operação real e manutenção contínua
+
+O BELLEART IA agora trabalha em modo de evolução contínua: melhorias devem nascer de necessidades observadas no uso diário da clínica e priorizar velocidade, estabilidade, simplicidade e produtividade.
+
+Ao iniciar, o backend executa uma verificação automática e não destrutiva de:
+
+- integridade do banco SQLite;
+- APIs internas e carregamento do Express;
+- Brain operacional;
+- agentes de IA;
+- memória operacional;
+- aprendizado contínuo.
+
+O resultado é salvo na tabela `system_health` e pode ser consultado em:
+
+```text
+GET /api/health
+```
+
+O histórico de melhorias fica em `docs/EVOLUTION_LOG.md`, registrando motivo, impacto, arquivos alterados e testes executados.
+
 ## Primeiro acesso
 
 - E-mail: `admin@belleart.local`
