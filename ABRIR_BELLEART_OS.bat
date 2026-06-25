@@ -32,14 +32,46 @@ for %%P in (3001 5173) do (
 echo [INFO] Iniciando backend em http://localhost:3001/api ...
 start "BELLEART OS - Backend" /min cmd /k "cd /d ""%~dp0backend"" && npm start"
 
-echo [INFO] Aguardando backend responder...
-timeout /t 3 /nobreak >nul
+echo [INFO] Aguardando backend responder em http://localhost:3001/api/health ...
+set BACKEND_READY=0
+for /L %%T in (1,1,20) do (
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:3001/api/health' -TimeoutSec 2; if ($r.StatusCode -eq 200) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
+  if not errorlevel 1 (
+    set BACKEND_READY=1
+    goto :backend_ready
+  )
+  timeout /t 1 /nobreak >nul
+)
 
-echo [INFO] Iniciando frontend em http://localhost:5173 ...
+:backend_ready
+if not "%BACKEND_READY%"=="1" (
+  echo [ERRO] Backend nao respondeu em ate 20 segundos. Verifique a janela Backend.
+  pause
+  exit /b 1
+)
+
+echo [INFO] Backend pronto. Iniciando frontend em http://localhost:5173 ...
 start "BELLEART OS - Frontend" /min cmd /k "cd /d ""%~dp0frontend"" && npm run dev -- --host 0.0.0.0"
 
+echo [INFO] Aguardando frontend responder em http://localhost:5173 ...
+set FRONTEND_READY=0
+for /L %%T in (1,1,30) do (
+  powershell -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:5173' -TimeoutSec 2; if ($r.StatusCode -ge 200 -and $r.StatusCode -lt 500) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
+  if not errorlevel 1 (
+    set FRONTEND_READY=1
+    goto :frontend_ready
+  )
+  timeout /t 1 /nobreak >nul
+)
+
+:frontend_ready
+if not "%FRONTEND_READY%"=="1" (
+  echo [ERRO] Frontend nao respondeu em ate 30 segundos. Verifique a janela Frontend.
+  pause
+  exit /b 1
+)
+
 echo [INFO] Abrindo uma janela do navegador...
-timeout /t 4 /nobreak >nul
 start "" "http://localhost:5173"
 
 echo [OK] BELLEART OS iniciado. Feche as janelas Backend/Frontend para encerrar.
