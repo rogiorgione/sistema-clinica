@@ -1,10 +1,19 @@
 # QA Report — BELLEART OS
 
-**Data da validação:** 2026-06-24
+**Data da validação:** 2026-06-25
 
 ## Resumo executivo
 
-A validação automática completa do BELLEART OS foi adicionada com foco em estabilidade, navegação, APIs principais, preservação de dados e conferência estática do frontend. Todas as mudanças foram aditivas e seguras: o SQLite e os dados existentes de pacientes, agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações foram preservados.
+Foi executada uma rodada completa de QA automático do BELLEART OS após a criação da validação automática. O ciclo confirmou que o build do frontend, os testes do backend, a validação autenticada das APIs e a validação estática de rotas do frontend estão aprovados.
+
+A rodada foi feita de forma segura e aditiva: o SQLite foi preservado, pacientes foram preservados e os dados existentes de agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações não foram apagados nem recriados.
+
+## Testes executados nesta rodada
+
+- `npm run build --prefix frontend`
+- `npm test --prefix backend`
+- `node backend/scripts/validate-system.js`
+- `node frontend/scripts/validate-routes.js`
 
 ## Módulos validados
 
@@ -50,7 +59,7 @@ A validação automática completa do BELLEART OS foi adicionada com foco em est
 
 ## Rotas de API testadas automaticamente
 
-O script `backend/scripts/validate-system.js` inicializa o banco, autentica o administrador local, testa respostas com Bearer token, valida status HTTP 2xx, bloqueia HTML indevido e falha em qualquer erro 500.
+O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dados, autentica o administrador local, testa respostas com Bearer token, valida status HTTP 2xx, bloqueia HTML indevido e falha em qualquer erro 500.
 
 - `GET /api/health`
 - `GET /api/dashboard`
@@ -82,16 +91,28 @@ O script `frontend/scripts/validate-routes.js` confere:
 - presença controlada do fallback operacional premium;
 - matriz básica de permissões dos perfis Administrador, Dentista, Recepção, Financeiro, Marketing e Somente leitura.
 
-## Erros encontrados e corrigidos
+## Problemas encontrados
 
-- Algumas rotas de dashboard exigidas pela validação não tinham endpoint dedicado. Foram adicionadas respostas JSON para `/api/premium-os/dashboard`, `/api/enterprise/dashboard` e `/api/whatsapp/dashboard`.
-- A rota `/api/ai/agents` poderia cair no roteador de IA sem recurso compatível. Foi adicionada rota explícita para agentes.
-- O roteador operacional recebeu `/dashboard` para qualquer módulo genérico, evitando 404 em módulos como WhatsApp.
-- Textos genéricos antigos como “Novo registro” e “Módulo pronto para uso” foram removidos das páginas operacionais remanescentes.
+- Nenhuma rota quebrada foi encontrada na rodada atual.
+- Nenhum erro 401/403 indevido foi encontrado nas rotas principais autenticadas.
+- Nenhum erro 500 foi encontrado nas rotas principais.
+- Nenhuma resposta HTML indevida foi encontrada nas APIs validadas.
+- Nenhum caso de tela branca ou `Failed to fetch` foi identificado pelos validadores automáticos.
+- O frontend mantém fallback operacional controlado para módulos administrativos e operacionais ainda não especializados.
+- O `ABRIR_BELLEART_OS.bat` iniciava backend e frontend com esperas fixas, o que poderia abrir o navegador antes dos serviços responderem em máquinas mais lentas.
+
+## Problemas corrigidos
+
+- O `ABRIR_BELLEART_OS.bat` agora aguarda o backend responder em `http://localhost:3001/api/health` antes de iniciar o frontend.
+- O `ABRIR_BELLEART_OS.bat` agora aguarda o frontend responder em `http://localhost:5173` antes de abrir o navegador.
+- O inicializador passou a falhar com mensagem clara quando backend ou frontend não ficam prontos dentro do tempo esperado, reduzindo tela branca e erros de conexão por abertura antecipada.
+- O relatório de QA foi atualizado com a data nova, os testes executados, os problemas encontrados, os problemas corrigidos e os próximos passos.
 
 ## Módulos ainda atendidos pelo fallback operacional
 
-Alguns módulos administrativos e operacionais continuam usando `OperationalModulePage`, mas agora com cards, indicadores, filtros, formulário, tabela, estado vazio, loading e erro amigável. Isso mantém navegação real sem tela branca enquanto páginas dedicadas mais profundas podem ser priorizadas em ciclos futuros.
+Alguns módulos administrativos e operacionais continuam usando `OperationalModulePage`, mas com cards, indicadores, filtros, formulário, tabela, estado vazio, loading e erro amigável. Isso mantém navegação real sem tela branca enquanto páginas dedicadas mais profundas podem ser priorizadas em ciclos futuros.
+
+Módulos atualmente atendidos pelo fallback operacional controlado: notifications, documents, implant-crm, referrals, reactivation, implant-financial, reports, automations, settings, backups, users, audit e profile.
 
 ## Permissões validadas
 
@@ -106,14 +127,13 @@ Alguns módulos administrativos e operacionais continuam usando `OperationalModu
 
 - `npm run build --prefix frontend`: aprovado.
 - `npm test --prefix backend`: aprovado.
-- `find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check`: aprovado.
-- `node -e "require('./backend/src/database/schema')().then(()=>console.log('schema ok')).catch(e=>{console.error(e); process.exit(1)})"`: aprovado.
 - `node backend/scripts/validate-system.js`: aprovado.
 - `node frontend/scripts/validate-routes.js`: aprovado.
 
 ## Próximos passos recomendados
 
-1. Evoluir módulos do fallback operacional para páginas totalmente especializadas conforme prioridade clínica.
-2. Adicionar testes end-to-end com Playwright para renderização real no navegador.
+1. Evoluir módulos do fallback operacional para páginas totalmente especializadas conforme prioridade clínica e administrativa.
+2. Adicionar testes end-to-end com Playwright para renderização real no navegador e captura de tela automática.
 3. Expandir a validação de permissões com usuários reais de cada perfil e chamadas POST/PUT bloqueadas para leitura.
 4. Salvar artefatos JSON/HTML da validação em uma pasta `qa-artifacts` quando o time desejar histórico por execução.
+5. Adicionar verificação automatizada do inicializador Windows em ambiente CI com runner Windows.
