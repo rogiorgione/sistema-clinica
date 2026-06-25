@@ -4,60 +4,30 @@
 
 ## Resumo executivo
 
-Foi executada uma rodada completa de QA automático do BELLEART OS após a criação da validação automática. O ciclo confirmou que o build do frontend, os testes do backend, a validação autenticada das APIs e a validação estática de rotas do frontend estão aprovados.
+Foi executada uma rodada completa de QA automático após a inclusão da máquina diária de marketing e captação BELLEART. O ciclo confirmou build do frontend, testes do backend, checagem de sintaxe Node.js, validação autenticada das APIs e validação estática de rotas do frontend.
 
-A rodada foi feita de forma segura e aditiva: o SQLite foi preservado, pacientes foram preservados e os dados existentes de agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações não foram apagados nem recriados.
+A implementação foi feita de forma segura e aditiva: o SQLite foi preservado, pacientes foram preservados e os dados existentes de agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações não foram apagados nem recriados.
+
+## Funcionalidades adicionadas e validadas
+
+- Meta comercial inicial de **15 orçamentos por mês**.
+- Panfletagem rastreável com campanha Jardim Ângela, código de campanha, mensagem pronta, QR/link futuro e custos.
+- Entrada rápida de lead com criação automática de CRM/follow-up para hoje e mensagem sugerida de WhatsApp.
+- Rotina comercial diária com listas para contatos de hoje, atrasados, leads quentes, panfleto e Instagram/TikTok.
+- Mensagens de WhatsApp de conversão para implante, ortodontia, prótese e panfletagem.
+- Checklist diário de conteúdo com 1 Reel, 3 Stories, comentários/directs, registro de leads e follow-ups.
+- Painel diário de marketing, relatório semanal, desempenho por origem e alertas comerciais.
+- Rotas REST para metas, panfletos, lead capture, rotina comercial, dashboard diário, relatórios, performance e alertas.
 
 ## Testes executados nesta rodada
 
-- `npm run build --prefix frontend`
-- `npm test --prefix backend`
-- `node backend/scripts/validate-system.js`
-- `node frontend/scripts/validate-routes.js`
+- `npm run build --prefix frontend`: aprovado.
+- `npm test --prefix backend`: aprovado.
+- `find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check`: aprovado.
+- `node backend/scripts/validate-system.js`: aprovado.
+- `node frontend/scripts/validate-routes.js`: aprovado.
 
-## Módulos validados
-
-- Dashboard
-- Painel Executivo
-- Notificações
-- Pacientes
-- Agenda
-- Orçamentos
-- Documentos
-- CRM de Implantes
-- Indicações
-- Reativação
-- Marketing
-- Captação de Leads
-- Campanhas
-- CRM
-- WhatsApp Inteligente
-- Tarefas Comerciais
-- Banco de Legendas
-- Calendário de Conteúdo
-- Assistente IA
-- Roteiros Reels
-- Banco de Stories
-- Métricas Sociais
-- Financeiro
-- Financeiro de Implantes
-- Relatórios
-- Automações
-- Configurações
-- Gestão & Backup
-- Usuários
-- Auditoria
-- Perfil
-- Central de Tráfego
-- Integrações Sociais
-- BELLEART OS Premium
-- Central Clínica
-- CRM Kanban Enterprise
-- Secretária Virtual IA
-- BELLEART AI
-- Backup e Segurança
-
-## Rotas de API testadas automaticamente
+## Rotas principais validadas automaticamente
 
 O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dados, autentica o administrador local, testa respostas com Bearer token, valida status HTTP 2xx, bloqueia HTML indevido e falha em qualquer erro 500.
 
@@ -82,58 +52,18 @@ O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dado
 
 ## Validação frontend
 
-O script `frontend/scripts/validate-routes.js` confere:
+O script `frontend/scripts/validate-routes.js` confirmou módulos declarados, imports de páginas, páginas React existentes, ausência de duplicidades, fallback operacional controlado e matriz básica de permissões.
 
-- módulos declarados em `frontend/src/modules.js`;
-- imports de páginas em `frontend/src/App.jsx`;
-- páginas React existentes em `frontend/src/pages`;
-- duplicidades de chaves de menu;
-- presença controlada do fallback operacional premium;
-- matriz básica de permissões dos perfis Administrador, Dentista, Recepção, Financeiro, Marketing e Somente leitura.
-
-## Problemas encontrados
+## Resultado
 
 - Nenhuma rota quebrada foi encontrada na rodada atual.
-- Nenhum erro 401/403 indevido foi encontrado nas rotas principais autenticadas.
 - Nenhum erro 500 foi encontrado nas rotas principais.
 - Nenhuma resposta HTML indevida foi encontrada nas APIs validadas.
-- Nenhum caso de tela branca ou `Failed to fetch` foi identificado pelos validadores automáticos.
-- O frontend mantém fallback operacional controlado para módulos administrativos e operacionais ainda não especializados.
-- O `ABRIR_BELLEART_OS.bat` iniciava backend e frontend com esperas fixas, o que poderia abrir o navegador antes dos serviços responderem em máquinas mais lentas.
-
-## Problemas corrigidos
-
-- O `ABRIR_BELLEART_OS.bat` agora aguarda o backend responder em `http://localhost:3001/api/health` antes de iniciar o frontend.
-- O `ABRIR_BELLEART_OS.bat` agora aguarda o frontend responder em `http://localhost:5173` antes de abrir o navegador.
-- O inicializador passou a falhar com mensagem clara quando backend ou frontend não ficam prontos dentro do tempo esperado, reduzindo tela branca e erros de conexão por abertura antecipada.
-- O relatório de QA foi atualizado com a data nova, os testes executados, os problemas encontrados, os problemas corrigidos e os próximos passos.
-
-## Módulos ainda atendidos pelo fallback operacional
-
-Alguns módulos administrativos e operacionais continuam usando `OperationalModulePage`, mas com cards, indicadores, filtros, formulário, tabela, estado vazio, loading e erro amigável. Isso mantém navegação real sem tela branca enquanto páginas dedicadas mais profundas podem ser priorizadas em ciclos futuros.
-
-Módulos atualmente atendidos pelo fallback operacional controlado: notifications, documents, implant-crm, referrals, reactivation, implant-financial, reports, automations, settings, backups, users, audit e profile.
-
-## Permissões validadas
-
-- Administrador: acesso total.
-- Dentista: clínica, pacientes, agenda, orçamentos, documentos, implantes, financeiro de leitura operacional e perfil.
-- Recepção: pacientes, agenda, leads, WhatsApp, tarefas e fluxo comercial.
-- Financeiro: financeiro, relatórios, documentos, painel executivo e backups premium.
-- Marketing: marketing, vendas, CRM, WhatsApp, conteúdo, tráfego e automações.
-- Somente leitura: navega sem criar/alterar dados; bloqueio de escrita mantido no backend.
-
-## Resultado dos testes obrigatórios
-
-- `npm run build --prefix frontend`: aprovado.
-- `npm test --prefix backend`: aprovado.
-- `node backend/scripts/validate-system.js`: aprovado.
-- `node frontend/scripts/validate-routes.js`: aprovado.
+- Nenhum problema de duplicidade de rota frontend foi encontrado.
+- Build, testes e QA automático foram aprovados.
 
 ## Próximos passos recomendados
 
-1. Evoluir módulos do fallback operacional para páginas totalmente especializadas conforme prioridade clínica e administrativa.
-2. Adicionar testes end-to-end com Playwright para renderização real no navegador e captura de tela automática.
-3. Expandir a validação de permissões com usuários reais de cada perfil e chamadas POST/PUT bloqueadas para leitura.
-4. Salvar artefatos JSON/HTML da validação em uma pasta `qa-artifacts` quando o time desejar histórico por execução.
-5. Adicionar verificação automatizada do inicializador Windows em ambiente CI com runner Windows.
+1. Adicionar testes automatizados específicos para as novas rotas de marketing diário com POST/GET autenticado.
+2. Evoluir os cards de cada nova página para gráficos dedicados por origem/campanha.
+3. Conectar WhatsApp Business API oficial e APIs sociais via OAuth, sem armazenar senhas.

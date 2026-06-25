@@ -645,3 +645,57 @@ node backend/scripts/validate-system.js
 node frontend/scripts/validate-routes.js
 ```
 
+```
+
+QA automático completo:
+
+```bash
+node backend/scripts/validate-system.js
+node frontend/scripts/validate-routes.js
+```
+
+## Máquina diária de marketing e captação BELLEART
+
+Esta fase cria uma operação diária para buscar no mínimo **15 pessoas por mês solicitando orçamento**, com captação, organização, priorização e acompanhamento dos interessados antes do fechamento pelo Dr. Rogério e equipe.
+
+### Módulos criados no menu Marketing & Vendas
+
+- **Meta de Orçamentos:** acompanha meta mensal de 15 orçamentos, orçamentos gerados, faltantes, média diária necessária, leads recebidos, qualificados, avaliações e alertas de ritmo.
+- **Panfletagem:** cadastra campanhas rastreáveis com bairro, região, quantidade, responsável, custo, tratamento, oferta, código impresso, mensagem de WhatsApp, QR Code/link futuro, leads e custos por resultado.
+- **Entrada Rápida de Lead:** registra nome, WhatsApp, interesse, origem, campanha, bairro, urgência e melhor horário; ao salvar, cria CRM/follow-up do dia e mensagem sugerida.
+- **Rotina Comercial do Dia:** separa WhatsApp/telefone de hoje, atrasados, leads quentes, leads de panfleto e leads de Instagram/TikTok.
+- **Painel de Marketing Diário:** mostra posts previstos/publicados, checklist, leads recebidos/contatados, follow-ups, orçamentos e avaliações.
+- **Relatório Semanal:** consolida leads, orçamentos, origens, campanhas fortes/fracas, pendências da equipe e próximos passos.
+- **Desempenho por Origem:** acompanha leads e orçamentos por Instagram, TikTok, Facebook, WhatsApp, Panfleto, Indicação, Google, Site e Tráfego pago.
+
+### Fluxo recomendado de uso diário
+
+1. Conferir **Meta de Orçamentos** para saber se a clínica está abaixo, dentro ou acima do ritmo dos 15 orçamentos/mês.
+2. Abrir **Painel de Marketing Diário** e cumprir o checklist: 1 Reel, 3 Stories, responder comentários/directs, registrar leads e revisar follow-ups.
+3. Registrar todo interessado na **Entrada Rápida de Lead**, inclusive contatos vindos de panfleto, Instagram, TikTok e WhatsApp.
+4. Executar a **Rotina Comercial do Dia**, usando o botão de WhatsApp e registrando ações de follow-up.
+5. Atualizar **Panfletagem** com distribuição, custo e retorno por bairro/campanha.
+6. Toda semana, revisar o **Relatório Semanal** e reforçar as origens/campanhas que geram mais orçamentos.
+
+### Rotas da API autenticada
+
+```text
+GET/POST /api/marketing-goals
+GET/POST /api/flyers/campaigns
+GET/POST /api/flyers/distribution
+GET/POST /api/lead-capture
+GET      /api/commercial-routine/today
+POST     /api/commercial-routine/actions
+GET      /api/marketing-daily/dashboard
+GET      /api/marketing-weekly/reports
+GET      /api/marketing-origin/performance
+GET      /api/marketing-alerts
+```
+
+### Segurança e preservação de dados
+
+- O SQLite continua sendo preservado e atualizado de forma incremental.
+- Pacientes, agenda, financeiro, CRM, marketing, WhatsApp e dados existentes não são apagados.
+- As novas tabelas são criadas com `CREATE TABLE IF NOT EXISTS`.
+- Seeds e dados padrão usam `INSERT OR IGNORE`.
+- Nenhuma senha de redes sociais é armazenada; integrações externas permanecem preparadas para OAuth/API oficial.
