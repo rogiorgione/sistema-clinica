@@ -36,6 +36,13 @@ const marketingResources = {
 };
 const dailyMarketingPages = ['marketingGoals','flyers','quickLead','commercialRoutine','marketingDaily','weeklyReport','originPerformance'];
 const pageLabels = Object.fromEntries(groups.flatMap((group) => group.items));
+const HOME_PAGE = 'marketingEmployee';
+const LEGACY_ACTIVE_PAGE_KEYS = ['belleart_active_page', 'belleart_activePage', 'activePage'];
+
+function clearLegacyActivePage() {
+  LEGACY_ACTIVE_PAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+}
+
 const fixedPages = {
   appointments: Appointments,
   budgets: Budgets,
@@ -68,10 +75,15 @@ function getStoredSessionUser() {
 
 export default function App() {
   const [user, setUser] = useState(getStoredSessionUser);
-  const [activePage, setActivePage] = useState('marketingEmployee');
+  const [activePage, setActivePage] = useState(HOME_PAGE);
+
+  useEffect(() => {
+    clearLegacyActivePage();
+  }, []);
 
   useEffect(() => onSessionExpired(() => {
-    setActivePage('marketingEmployee');
+    clearLegacyActivePage();
+    setActivePage(HOME_PAGE);
     setUser(null);
   }), []);
 
@@ -82,13 +94,15 @@ export default function App() {
       return;
     }
 
-    setActivePage('marketingEmployee');
+    clearLegacyActivePage();
+    setActivePage(HOME_PAGE);
     setUser(sessionUser);
   }
 
   function handleLogout() {
     clearStoredSession();
-    setActivePage('marketingEmployee');
+    clearLegacyActivePage();
+    setActivePage(HOME_PAGE);
     setUser(null);
   }
 

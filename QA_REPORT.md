@@ -69,3 +69,22 @@ O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dado
 - Meta de 15 orçamentos mantida como alvo mensal.
 - Dashboard único de rotina diária criado.
 - Integrações continuam preparadas para OAuth/API oficial, sem senha permanente.
+
+## Correção — tela inicial O QUE FAZER HOJE (2026-06-25)
+
+### Objetivo validado
+- O frontend agora usa uma constante única `HOME_PAGE = 'marketingEmployee'` para iniciar o BELLEART OS sempre no painel **O que fazer hoje**.
+- O login força `activePage` para `marketingEmployee`, impedindo retorno automático ao Dashboard antigo.
+- O logout também reseta o estado para `marketingEmployee`, garantindo que um novo login abra novamente no painel diário.
+- Chaves antigas de página ativa em `localStorage` são removidas para evitar conflito com instalações anteriores que tenham salvo Dashboard como padrão.
+- O menu principal exibe **O que fazer hoje** como primeiro item e **Dashboard** logo depois.
+- A validação estática do frontend agora falha se o menu deixar de começar em **O que fazer hoje**, se Dashboard ficar antes dele, ou se o app deixar de iniciar em `marketingEmployee`.
+
+### Rota revisada
+- `GET /api/marketing-employee/dashboard` permanece coberta pelo validador automático do backend e é consumida pela página `MarketingEmployeeDashboard.jsx`.
+
+### Comandos de QA executados
+- `npm run build --prefix frontend`
+- `npm test --prefix backend`
+- `node backend/scripts/validate-system.js`
+- `node frontend/scripts/validate-routes.js`
