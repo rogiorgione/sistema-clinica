@@ -16,7 +16,7 @@ const missingImports = importedPages.filter((file) => !pages.has(file));
 const genericFallback = appSource.includes('<OperationalModulePage');
 const fixedMatches = [...appSource.matchAll(/(?:['\"]([\w-]+)['\"]|\b([a-z][\w-]*)):\s*([A-Z]\w+)/g)].map((match) => match[1] || match[2]);
 const coveredBySpecialist = new Set([...fixedMatches]);
-for (const key of ['ai-assistant','content-calendar']) coveredBySpecialist.add(key);
+for (const key of ['marketingEmployee','ai-assistant','content-calendar']) coveredBySpecialist.add(key);
 for (const key of ['trafficCenter','trafficCampaigns','trafficPlatforms','trafficLeads','trafficMetrics','trafficRoi','socialIntegrations','apiSettings']) coveredBySpecialist.add(key);
 for (const key of ['commercial','pipeline','leads','followup','objections','crmCampaigns','commercialReports','commercialDashboard']) coveredBySpecialist.add(key);
 for (const key of ['marketing','lead-capture','campaigns','crm','whatsapp','tasks','captions','reels','stories','metrics']) coveredBySpecialist.add(key);

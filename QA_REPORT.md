@@ -4,28 +4,27 @@
 
 ## Sprint validada
 
-**sprint-marketing-captacao-sdr** — marketing, captação e rotina SDR para atingir a meta de **15 orçamentos por mês**.
+**sprint-funcionario-virtual-marketing** — reposicionamento do BELLEART OS para deixar de parecer um ERP e passar a operar como um **funcionário virtual de marketing** focado em gerar pacientes novos.
 
 ## Resumo executivo
 
-Foi executada uma rodada completa de QA automático após a revisão da máquina diária de marketing, captação rastreável e central da SDR/Secretária Comercial. O ciclo confirmou build do frontend, testes do backend, validação autenticada das APIs e validação estática de rotas do frontend. Nesta rodada, o menu também foi ajustado para exibir claramente o grupo **MÁQUINA DE MARKETING** com todos os módulos da sprint.
+A sprint criou o dashboard principal **O QUE FAZER HOJE**, que passa a ser a primeira tela após login. A tela mostra somente ações práticas: conteúdo a postar, leads a responder, ligações, follow-ups atrasados, oferta do dia e panfletagem rastreável.
 
-A implementação foi feita de forma segura e aditiva: o SQLite foi preservado, pacientes foram preservados e os dados existentes de agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações não foram apagados nem recriados.
+A implementação foi aditiva: o SQLite não foi apagado, pacientes não foram removidos e as estruturas existentes continuam disponíveis.
 
 ## Funcionalidades adicionadas e validadas
 
-- Meta comercial inicial de **15 orçamentos por mês** configurada em seed aditivo.
-- Panfletagem rastreável com campanha Jardim Ângela, código de campanha, mensagem pronta, QR/link futuro e custos.
-- Entrada rápida de lead com criação automática de CRM/follow-up para hoje e mensagem sugerida de WhatsApp.
-- Central da SDR/Secretária Comercial com lista de contatos do dia e alertas de follow-up atrasado.
-- Ações rápidas da SDR: abrir WhatsApp, marcar contatado, avaliação agendada, orçamento enviado, fechado e perdido.
-- Rotina comercial diária com contatos de hoje, atrasados, leads quentes, panfleto e Instagram/TikTok.
-- Rankings de origem e campanha com leads e orçamentos.
-- Mensagens de WhatsApp de conversão para implante, ortodontia, prótese e panfletagem.
-- Checklist diário de conteúdo com 1 Reel, 3 Stories, comentários/directs, registro de leads e follow-ups.
-- Grupo **MÁQUINA DE MARKETING** visível no menu com Meta de Orçamentos, Panfletagem, Entrada Rápida de Lead, Central SDR, Painel Diário, Relatório Semanal e Desempenho por Origem.
-- Painel diário de marketing, relatório semanal automático, desempenho por origem e alertas comerciais.
-- Rotas REST para metas, panfletos, lead capture, rotina SDR, dashboard diário, relatórios, performance e alertas.
+- Nova rota autenticada `GET /api/marketing-employee/dashboard` para montar a rotina diária da IA de marketing.
+- Nova página React `MarketingEmployeeDashboard.jsx` com foco em **O QUE FAZER HOJE**.
+- O login agora abre diretamente o funcionário virtual de marketing.
+- Menu ganhou entrada principal **O que fazer hoje**.
+- Dashboard inteligente com meta do mês, orçamentos, leads, conversão, melhor campanha, melhor origem, melhor horário e próximas tarefas.
+- Bloco SDR mostra quem ligar primeiro, quem chamar no WhatsApp, quem esqueceu de responder, leads quentes e prováveis fechamentos.
+- Bloco IA de marketing responde o que funcionou, o que não funcionou, o que repetir e o que parar.
+- Bloco de conteúdo mostra posts prontos para aprovar com gancho, CTA e roteiro já vindos do calendário de 365 dias.
+- Bloco de publicação reforça integrações oficiais via OAuth/API e que senhas não devem ser armazenadas.
+- Permissões ajustadas para perfis clínicos/financeiros conseguirem visualizar a rotina de marketing em modo seguro de leitura.
+- Validação automática do backend passou a incluir `/api/marketing-employee/dashboard`.
 
 ## Testes executados nesta rodada
 
@@ -45,6 +44,7 @@ O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dado
 - `GET /api/appointments`
 - `GET /api/budgets`
 - `GET /api/financial`
+- `GET /api/marketing-employee/dashboard`
 - `GET /api/marketing-ai/summary`
 - `GET /api/content/dashboard`
 - `GET /api/whatsapp/dashboard`
@@ -58,10 +58,6 @@ O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dado
 - `GET /api/automations/dashboard`
 - `GET /api/backup/jobs`
 
-## Validação frontend
-
-O script `frontend/scripts/validate-routes.js` confirmou módulos declarados, imports de páginas, páginas React existentes, ausência de duplicidades, fallback operacional controlado e matriz básica de permissões. A validação estática agora reconhece os módulos da máquina de marketing como atendidos pela página especializada `DailyMarketingMachine.jsx`.
-
 ## Garantias da sprint
 
 - SQLite preservado.
@@ -70,14 +66,6 @@ O script `frontend/scripts/validate-routes.js` confirmou módulos declarados, im
 - Build aprovado.
 - Testes aprovados.
 - QA automático aprovado.
-- Meta de 15 orçamentos configurada.
-- Rotina SDR criada.
-- Panfletagem rastreável revisada.
-- WhatsApp de conversão revisado.
-- Relatório semanal funcionando.
-
-## Próximos passos recomendados
-
-1. Adicionar testes automatizados específicos para as novas rotas da SDR com POST autenticado.
-2. Evoluir os cards de origem/campanha para gráficos dedicados.
-3. Conectar WhatsApp Business API oficial e APIs sociais via OAuth, sem armazenar senhas.
+- Meta de 15 orçamentos mantida como alvo mensal.
+- Dashboard único de rotina diária criado.
+- Integrações continuam preparadas para OAuth/API oficial, sem senha permanente.

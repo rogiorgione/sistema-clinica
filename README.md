@@ -84,6 +84,30 @@ export ADMIN_PASSWORD='uma-senha-forte'
 export AUTH_SECRET='um-segredo-longo-e-aleatorio'
 ```
 
+
+## BELLEART OS — Funcionário Virtual de Marketing
+
+A partir desta sprint, o objetivo principal do BELLEART OS é gerar pacientes novos para orçamento. A primeira tela após o login é **O QUE FAZER HOJE**, um dashboard inteligente que simula um gerente de marketing trabalhando diariamente pela clínica.
+
+O sistema prioriza:
+
+- meta mensal mínima de 15 pacientes para orçamento;
+- conteúdo do dia para Reels, Stories, carrosséis, posts, legendas, CTA e hashtags;
+- leads que devem receber WhatsApp;
+- pacientes/leads que devem receber ligação;
+- follow-ups atrasados;
+- oferta do dia;
+- panfletagem rastreável;
+- análise do que funcionou, do que não funcionou, do que repetir e do que parar.
+
+A rota principal autenticada é:
+
+```text
+GET /api/marketing-employee/dashboard
+```
+
+As integrações de publicação são preparadas para uso oficial via OAuth/API: Meta Graph API, Instagram, Facebook, TikTok Business API, Google Business Profile, WhatsApp Business Cloud API, Google Calendar e Google Drive. O sistema não deve armazenar senhas de redes sociais.
+
 ## BELLEART Marketing AI - Fase 1
 
 A Fase 1 transforma o BELLEART OS em uma base operacional de marketing odontológico. Ao iniciar o backend, o SQLite cria tabelas novas com `CREATE TABLE IF NOT EXISTS` e popula um planejamento inicial sem apagar dados existentes.

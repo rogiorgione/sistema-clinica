@@ -151,3 +151,18 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
   .page-header { align-items: flex-start; flex-direction: column; }
   .kanban-board, .enterprise-kanban { grid-template-columns: repeat(6, minmax(220px, 82vw)); }
 }
+.marketing-employee { display: grid; gap: 1.2rem; }
+.employee-hero { background: linear-gradient(135deg, #071427, #174ea6); border-radius: 28px; color: #fff; padding: 2rem; }
+.employee-hero p { color: #dbeafe; max-width: 860px; }
+.employee-hero h1 { font-size: clamp(2rem, 6vw, 4rem); margin: .2rem 0 .6rem; }
+.today-list { display: grid; gap: .85rem; }
+.today-task { align-items: center; background: #fff; border: 1px solid #dbeafe; border-left: 8px solid #2563eb; border-radius: 20px; box-shadow: 0 12px 28px rgba(15,23,42,.08); display: flex; gap: 1rem; justify-content: space-between; padding: 1.1rem 1.3rem; }
+.today-task.urgent { border-left-color: #dc2626; background: #fff7f7; }
+.today-task span { color: #2563eb; font-weight: 900; text-transform: uppercase; }
+.today-task h2 { font-size: 1.35rem; margin: .2rem 0; }
+.today-task p { color: #475569; margin: 0; }
+.today-task strong { background: #eff6ff; border-radius: 999px; color: #1d4ed8; padding: .55rem .8rem; white-space: nowrap; }
+.employee-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.employee-grid h3 { margin-top: 0; }
+.employee-grid p { color: #334155; line-height: 1.5; }
+@media (max-width: 760px) { .today-task { align-items: flex-start; flex-direction: column; } .today-task strong { white-space: normal; } }
