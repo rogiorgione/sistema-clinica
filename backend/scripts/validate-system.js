@@ -8,7 +8,7 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@belleart.local';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 const routes = [
   '/api/health','/api/dashboard','/api/patients','/api/appointments','/api/budgets','/api/financial',
-  '/api/marketing-ai/summary','/api/content/dashboard','/api/whatsapp/dashboard','/api/ads/dashboard',
+  '/api/marketing-employee/dashboard','/api/marketing-ai/summary','/api/content/dashboard','/api/whatsapp/dashboard','/api/ads/dashboard',
   '/api/premium-os/dashboard','/api/enterprise/dashboard','/api/enterprise-crm/dashboard','/api/clinical/dashboard',
   '/api/secretary/dashboard','/api/ai/agents','/api/automations/dashboard','/api/backup/jobs',
 ];

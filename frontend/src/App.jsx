@@ -10,6 +10,7 @@ import EnterpriseSaas from './pages/EnterpriseSaas.jsx';
 import Financial from './pages/Financial.jsx';
 import Login from './pages/Login.jsx';
 import MarketingAI from './pages/MarketingAI.jsx';
+import MarketingEmployeeDashboard from './pages/MarketingEmployeeDashboard.jsx';
 import AssistantAI from './pages/AssistantAI.jsx';
 import ContentCalendar from './pages/ContentCalendar.jsx';
 import CommercialCenter from './pages/CommercialCenter.jsx';
@@ -38,6 +39,7 @@ const pageLabels = Object.fromEntries(groups.flatMap((group) => group.items));
 const fixedPages = {
   appointments: Appointments,
   budgets: Budgets,
+  marketingEmployee: MarketingEmployeeDashboard,
   dashboard: Dashboard,
   executive: ExecutivePanel,
   enterprise: Enterprise,
@@ -66,10 +68,10 @@ function getStoredSessionUser() {
 
 export default function App() {
   const [user, setUser] = useState(getStoredSessionUser);
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('marketingEmployee');
 
   useEffect(() => onSessionExpired(() => {
-    setActivePage('dashboard');
+    setActivePage('marketingEmployee');
     setUser(null);
   }), []);
 
@@ -80,13 +82,13 @@ export default function App() {
       return;
     }
 
-    setActivePage('dashboard');
+    setActivePage('marketingEmployee');
     setUser(sessionUser);
   }
 
   function handleLogout() {
     clearStoredSession();
-    setActivePage('dashboard');
+    setActivePage('marketingEmployee');
     setUser(null);
   }
 

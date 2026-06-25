@@ -18,6 +18,36 @@ async function goalSummary() {
  const expected = (target/days)*day; const budgets=row?.budgets||0;
  return { month, target, generated: budgets, missing: Math.max(target-budgets,0), daily_average_needed: Math.round((Math.max(target-budgets,0)/Math.max(days-day+1,1))*100)/100, leads_received: row?.leads||0, qualified_leads: row?.qualified||0, evaluations_scheduled: row?.evaluations||0, evaluations_done: row?.attended||0, attendance_rate: pct(row?.attended||0,row?.evaluations||0), budget_rate: pct(budgets,row?.leads||0), alert: budgets >= target ? 'acima da meta' : budgets >= expected ? 'dentro da meta' : 'abaixo da meta' };
 }
+
+async function virtualEmployeeDashboard() {
+ const today = todayIso();
+ const goal = await goalSummary();
+ const contentToday = await all(`SELECT p.*, i.theme FROM content_posts p LEFT JOIN content_ideas i ON i.id=p.idea_id WHERE p.scheduled_date=? ORDER BY CASE p.format WHEN 'Reels' THEN 0 WHEN 'Stories' THEN 1 ELSE 2 END, p.platform ASC LIMIT 6`, [today]);
+ const fallbackContent = contentToday.length ? [] : await all(`SELECT p.*, i.theme FROM content_posts p LEFT JOIN content_ideas i ON i.id=p.idea_id WHERE p.status!='Publicado' ORDER BY p.scheduled_date ASC LIMIT 3`);
+ const overdue = await all("SELECT * FROM commercial_daily_tasks WHERE due_date<? AND status!='Concluída' ORDER BY priority DESC, due_date ASC LIMIT 5", [today]);
+ const whats = await all("SELECT * FROM commercial_daily_tasks WHERE due_date<=? AND channel='WhatsApp' AND status!='Concluída' ORDER BY priority DESC, due_date ASC LIMIT 5", [today]);
+ const calls = await all("SELECT * FROM commercial_daily_tasks WHERE due_date<=? AND channel='Telefone' AND status!='Concluída' ORDER BY priority DESC, due_date ASC LIMIT 5", [today]);
+ const hotLeads = await all(`SELECT * FROM lead_capture_entries WHERE status NOT IN ('Fechado','Perdido') ORDER BY CASE urgency WHEN 'Alta' THEN 0 WHEN 'Média' THEN 1 ELSE 2 END, CASE WHEN next_contact_date<=? THEN 0 ELSE 1 END, created_at ASC LIMIT 5`, [today]);
+ const checklist = await all('SELECT * FROM marketing_daily_checklist WHERE checklist_date=? AND status!="Concluída" ORDER BY id LIMIT 8', [today]);
+ const originRanking = await all(`SELECT COALESCE(origin,'Sem origem') label, COUNT(*) leads, SUM(CASE WHEN status IN ('Orçamento enviado','Fechado') THEN 1 ELSE 0 END) budgets FROM lead_capture_entries GROUP BY COALESCE(origin,'Sem origem') ORDER BY budgets DESC, leads DESC LIMIT 5`);
+ const campaignRanking = await all(`SELECT COALESCE(campaign,'Sem campanha') label, COUNT(*) leads, SUM(CASE WHEN status IN ('Orçamento enviado','Fechado') THEN 1 ELSE 0 END) budgets FROM lead_capture_entries GROUP BY COALESCE(campaign,'Sem campanha') ORDER BY budgets DESC, leads DESC LIMIT 5`);
+ const socialMetrics = await all(`SELECT platform, SUM(reach) reach, SUM(views) views, SUM(likes) likes, SUM(shares) shares FROM marketing_metrics GROUP BY platform ORDER BY views DESC, reach DESC`);
+ const bestOrigin = originRanking[0]?.label || 'Sem dados suficientes';
+ const bestCampaign = campaignRanking[0]?.label || 'Sem campanha validada';
+ const tasks = [];
+ const plannedContent = contentToday.length ? contentToday : fallbackContent;
+ if (plannedContent[0]) tasks.push({ type:'Conteúdo', priority:'Alta', title:`Postar ${plannedContent[0].format} às 18:30`, detail:`${plannedContent[0].platform} — ${plannedContent[0].category}: ${plannedContent[0].hook}`, action:'Aprovar e publicar' });
+ if (plannedContent.find((p)=>p.format==='Stories')) tasks.push({ type:'Conteúdo', priority:'Alta', title:'Publicar Story', detail:'Use enquete/caixa de pergunta e CTA para avaliação.', action:'Aprovar stories' });
+ if (whats.length) tasks.push({ type:'SDR', priority:'Alta', title:`Responder ${whats.length} lead(s) no WhatsApp`, detail:whats.map((t)=>t.title).join(' • '), action:'Abrir WhatsApp' });
+ if (calls.length) tasks.push({ type:'SDR', priority:'Alta', title:`Ligar para ${calls.length} paciente(s)/lead(s)`, detail:calls.map((t)=>t.title).join(' • '), action:'Ligar primeiro' });
+ if (overdue.length) tasks.push({ type:'SDR', priority:'Urgente', title:`Recuperar ${overdue.length} follow-up(s) atrasado(s)`, detail:'Quem esqueceu de responder deve vir antes de conteúdo novo.', action:'Retomar conversa' });
+ if (hotLeads.length) tasks.push({ type:'SDR', priority:'Alta', title:`Priorizar ${hotLeads.length} lead(s) quente(s)`, detail:hotLeads.map((l)=>`${l.name} (${l.interest || 'interesse não informado'})`).join(' • '), action:'Chamar agora' });
+ if (checklist.find((i)=>/coment|direct/i.test(i.item))) tasks.push({ type:'Comunidade', priority:'Média', title:'Responder comentários e verificar Direct', detail:'Eliminar pendências antes das 12h e repetir às 18h.', action:'Responder agora' });
+ tasks.push({ type:'Oferta', priority:'Média', title:'Fazer oferta do dia', detail:`Foco sugerido: ${bestCampaign !== 'Sem campanha validada' ? bestCampaign : 'avaliação de implantes/ortodontia'}.`, action:'Enviar campanha WhatsApp' });
+ tasks.push({ type:'Offline', priority:'Média', title:'Distribuir 300 panfletos', detail:'Usar QR/link rastreável e registrar custo para ROI.', action:'Registrar panfletagem' });
+ return { today, goal, tasks: tasks.slice(0, 9), dashboard: { monthly_goal: goal.target, budgets: goal.generated, leads: goal.leads_received, conversion: goal.budget_rate, best_campaign: bestCampaign, best_origin: bestOrigin, best_posting_time: '18:30', next_tasks: tasks.length }, sdr: { call_first: calls, whatsapp_first: whats, forgotten: overdue, hot: hotLeads, likely_to_close: hotLeads.filter((l)=>l.urgency==='Alta').slice(0,3) }, content: plannedContent, analysis: { worked: bestOrigin, not_worked: originRanking.filter((o)=>(o.budgets||0)===0).map((o)=>o.label).slice(0,3).join(', ') || 'Acompanhar mais dados', repeat: bestCampaign, stop: 'Pausar campanhas sem lead/orçamento por 7 dias', social_metrics: socialMetrics }, integrations: ['Meta Graph API OAuth','Instagram Graph API OAuth','Facebook Pages OAuth','TikTok Business API OAuth','Google Business Profile OAuth','WhatsApp Business Cloud API','Google Calendar OAuth','Google Drive OAuth'] };
+}
+
 async function buildWeeklyReport() {
  const start = weekStartIso(); const end = addDays(start, 6);
  const totals = await get(`SELECT COUNT(*) leads_week, SUM(CASE WHEN status IN ('Orçamento enviado','Fechado') THEN 1 ELSE 0 END) budgets_week FROM lead_capture_entries WHERE substr(created_at,1,10) BETWEEN ? AND ?`, [start, end]);
@@ -34,6 +64,7 @@ async function updateLeadStatus(id, status, extra = {}) {
  await run('INSERT INTO commercial_followup_actions (lead_id, action_type, channel, message, result, next_contact_date, status) VALUES (?,?,?,?,?,?,?)', [id, status, extra.channel || 'WhatsApp', extra.message || `Lead marcado como ${status}`, extra.result || status, next, 'Registrada']);
  return get('SELECT * FROM lead_capture_entries WHERE id=?', [id]);
 }
+router.get('/marketing-employee/dashboard', async(req,res,next)=>{try{res.json(await virtualEmployeeDashboard());}catch(e){next(e);}});
 router.get('/marketing-goals', async (req,res,next)=>{try{res.json({summary:await goalSummary(), goals: await all('SELECT * FROM marketing_goals ORDER BY month DESC')});}catch(e){next(e);}});
 router.post('/marketing-goals', async (req,res,next)=>{try{const b=req.body; const r=await run('INSERT INTO marketing_goals (month, monthly_budget_target, notes) VALUES (?,?,?)',[b.month||monthIso(), b.monthly_budget_target||15, b.notes||'Meta mensal']); res.status(201).json(await get('SELECT * FROM marketing_goals WHERE id=?',[r.id]));}catch(e){next(e);}});
 router.get('/flyers/campaigns', async(req,res,next)=>{try{res.json(await all('SELECT * FROM flyer_campaigns ORDER BY created_at DESC'));}catch(e){next(e);}});
