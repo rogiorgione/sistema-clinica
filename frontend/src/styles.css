@@ -166,3 +166,11 @@ th { background: #f8fafc; color: #475569; font-size: 0.85rem; text-transform: up
 .employee-grid h3 { margin-top: 0; }
 .employee-grid p { color: #334155; line-height: 1.5; }
 @media (max-width: 760px) { .today-task { align-items: flex-start; flex-direction: column; } .today-task strong { white-space: normal; } }
+
+.brain-page { display: grid; gap: 1.2rem; }
+.brain-hero { background: linear-gradient(135deg, #111827, #7c2d12); border-radius: 28px; color: #fff; padding: 2rem; }
+.brain-hero p { color: #ffedd5; max-width: 920px; }
+.brain-hero h1 { font-size: clamp(2rem, 6vw, 4rem); margin: .2rem 0 .6rem; }
+.brain-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.brain-grid p, .brain-grid li { color: #334155; line-height: 1.5; }
+.brain-answer { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 16px; margin-top: 1rem; padding: 1rem; }
