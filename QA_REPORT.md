@@ -2,30 +2,37 @@
 
 **Data da validação:** 2026-06-25
 
+## Sprint validada
+
+**sprint-marketing-captacao-sdr** — marketing, captação e rotina SDR para atingir a meta de **15 orçamentos por mês**.
+
 ## Resumo executivo
 
-Foi executada uma rodada completa de QA automático após a inclusão da máquina diária de marketing e captação BELLEART. O ciclo confirmou build do frontend, testes do backend, checagem de sintaxe Node.js, validação autenticada das APIs e validação estática de rotas do frontend.
+Foi executada uma rodada completa de QA automático após a revisão da máquina diária de marketing, captação rastreável e central da SDR/Secretária Comercial. O ciclo confirmou build do frontend, testes do backend, validação autenticada das APIs e validação estática de rotas do frontend.
 
 A implementação foi feita de forma segura e aditiva: o SQLite foi preservado, pacientes foram preservados e os dados existentes de agenda, financeiro, marketing, CRM, WhatsApp, documentos, usuários, auditoria e configurações não foram apagados nem recriados.
 
 ## Funcionalidades adicionadas e validadas
 
-- Meta comercial inicial de **15 orçamentos por mês**.
+- Meta comercial inicial de **15 orçamentos por mês** configurada em seed aditivo.
 - Panfletagem rastreável com campanha Jardim Ângela, código de campanha, mensagem pronta, QR/link futuro e custos.
 - Entrada rápida de lead com criação automática de CRM/follow-up para hoje e mensagem sugerida de WhatsApp.
-- Rotina comercial diária com listas para contatos de hoje, atrasados, leads quentes, panfleto e Instagram/TikTok.
+- Central da SDR/Secretária Comercial com lista de contatos do dia e alertas de follow-up atrasado.
+- Ações rápidas da SDR: abrir WhatsApp, marcar contatado, avaliação agendada, orçamento enviado, fechado e perdido.
+- Rotina comercial diária com contatos de hoje, atrasados, leads quentes, panfleto e Instagram/TikTok.
+- Rankings de origem e campanha com leads e orçamentos.
 - Mensagens de WhatsApp de conversão para implante, ortodontia, prótese e panfletagem.
 - Checklist diário de conteúdo com 1 Reel, 3 Stories, comentários/directs, registro de leads e follow-ups.
-- Painel diário de marketing, relatório semanal, desempenho por origem e alertas comerciais.
-- Rotas REST para metas, panfletos, lead capture, rotina comercial, dashboard diário, relatórios, performance e alertas.
+- Painel diário de marketing, relatório semanal automático, desempenho por origem e alertas comerciais.
+- Rotas REST para metas, panfletos, lead capture, rotina SDR, dashboard diário, relatórios, performance e alertas.
 
 ## Testes executados nesta rodada
 
 - `npm run build --prefix frontend`: aprovado.
 - `npm test --prefix backend`: aprovado.
-- `find backend/src -name '*.js' -print0 | xargs -0 -n1 node --check`: aprovado.
 - `node backend/scripts/validate-system.js`: aprovado.
 - `node frontend/scripts/validate-routes.js`: aprovado.
+- `node --check backend/src/routes/dailyMarketing.js`: aprovado.
 
 ## Rotas principais validadas automaticamente
 
@@ -54,16 +61,22 @@ O script `backend/scripts/validate-system.js` inicializa o banco sem apagar dado
 
 O script `frontend/scripts/validate-routes.js` confirmou módulos declarados, imports de páginas, páginas React existentes, ausência de duplicidades, fallback operacional controlado e matriz básica de permissões.
 
-## Resultado
+## Garantias da sprint
 
-- Nenhuma rota quebrada foi encontrada na rodada atual.
-- Nenhum erro 500 foi encontrado nas rotas principais.
-- Nenhuma resposta HTML indevida foi encontrada nas APIs validadas.
-- Nenhum problema de duplicidade de rota frontend foi encontrado.
-- Build, testes e QA automático foram aprovados.
+- SQLite preservado.
+- Pacientes preservados.
+- Dados existentes preservados.
+- Build aprovado.
+- Testes aprovados.
+- QA automático aprovado.
+- Meta de 15 orçamentos configurada.
+- Rotina SDR criada.
+- Panfletagem rastreável revisada.
+- WhatsApp de conversão revisado.
+- Relatório semanal funcionando.
 
 ## Próximos passos recomendados
 
-1. Adicionar testes automatizados específicos para as novas rotas de marketing diário com POST/GET autenticado.
-2. Evoluir os cards de cada nova página para gráficos dedicados por origem/campanha.
+1. Adicionar testes automatizados específicos para as novas rotas da SDR com POST autenticado.
+2. Evoluir os cards de origem/campanha para gráficos dedicados.
 3. Conectar WhatsApp Business API oficial e APIs sociais via OAuth, sem armazenar senhas.
