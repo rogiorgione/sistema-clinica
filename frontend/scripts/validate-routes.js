@@ -10,6 +10,13 @@ const appSource = fs.readFileSync(path.join(src, 'App.jsx'), 'utf8');
 const pageDir = path.join(src, 'pages');
 const pages = new Set(fs.readdirSync(pageDir).filter((file) => file.endsWith('.jsx')));
 const moduleKeys = groups.flatMap((group) => group.items.map(([key]) => key));
+const firstMenuItem = groups[0]?.items[0];
+const todayBeforeDashboard = moduleKeys.indexOf('marketingEmployee') > -1
+  && moduleKeys.indexOf('dashboard') > -1
+  && moduleKeys.indexOf('marketingEmployee') < moduleKeys.indexOf('dashboard');
+const appStartsOnMarketingEmployee = /useState\(HOME_PAGE\)/.test(appSource)
+  && /const HOME_PAGE = ['\"]marketingEmployee['\"]/.test(appSource);
+const clearsLegacyActivePage = appSource.includes('clearLegacyActivePage');
 const duplicates = moduleKeys.filter((key, index) => moduleKeys.indexOf(key) !== index);
 const importedPages = [...appSource.matchAll(/import\s+\w+\s+from\s+'\.\/pages\/(.+?\.jsx)'/g)].map((match) => match[1]);
 const missingImports = importedPages.filter((file) => !pages.has(file));
@@ -33,10 +40,14 @@ console.log(`Fallback operacional premium: ${genericFallback ? 'presente e contr
 console.log('Módulos atendidos pelo fallback operacional:', operationalModules.join(', ') || 'nenhum');
 console.log('Matriz de permissões validada:', permissionMatrix);
 
-if (duplicates.length || missingImports.length || !genericFallback) {
+if (duplicates.length || missingImports.length || !genericFallback || firstMenuItem?.[0] !== 'marketingEmployee' || !todayBeforeDashboard || !appStartsOnMarketingEmployee || !clearsLegacyActivePage) {
   if (duplicates.length) console.error('Duplicidades:', duplicates);
   if (missingImports.length) console.error('Imports ausentes:', missingImports);
   if (!genericFallback) console.error('Fallback operacional não encontrado.');
+  if (firstMenuItem?.[0] !== 'marketingEmployee') console.error('O primeiro item do menu deve ser O que fazer hoje.');
+  if (!todayBeforeDashboard) console.error('O que fazer hoje deve aparecer antes de Dashboard.');
+  if (!appStartsOnMarketingEmployee) console.error('App.jsx deve iniciar na página marketingEmployee.');
+  if (!clearsLegacyActivePage) console.error('App.jsx deve limpar activePage antigo do localStorage.');
   process.exit(1);
 }
 console.log('Validação frontend OK: rotas declaradas, imports existentes, permissões avaliadas e fallback genérico auditado.');
